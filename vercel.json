@@ -1,3 +1,5 @@
 {
-  "framework": "remix"
+  "framework": "remix",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install --include=dev"
 }

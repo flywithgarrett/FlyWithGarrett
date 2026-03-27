@@ -1,15 +1,22 @@
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 
 // In development, use in-memory store as fallback
 const memoryStore = new Map<string, unknown>();
 const isDev = process.env.NODE_ENV !== "production" || !process.env.KV_REST_API_URL;
 
+const redis = !isDev
+  ? new Redis({
+      url: process.env.KV_REST_API_URL!,
+      token: process.env.KV_REST_API_TOKEN!,
+    })
+  : null;
+
 export async function kvGet<T>(key: string): Promise<T | null> {
   try {
-    if (isDev) {
+    if (isDev || !redis) {
       return (memoryStore.get(key) as T) ?? null;
     }
-    return await kv.get<T>(key);
+    return await redis.get<T>(key);
   } catch {
     return (memoryStore.get(key) as T) ?? null;
   }
@@ -17,11 +24,11 @@ export async function kvGet<T>(key: string): Promise<T | null> {
 
 export async function kvSet<T>(key: string, value: T): Promise<void> {
   try {
-    if (isDev) {
+    if (isDev || !redis) {
       memoryStore.set(key, value);
       return;
     }
-    await kv.set(key, value);
+    await redis.set(key, JSON.stringify(value));
   } catch {
     memoryStore.set(key, value);
   }
