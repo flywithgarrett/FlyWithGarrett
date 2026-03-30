@@ -1,342 +1,202 @@
-import { useLoaderData, Form } from "react-router";
-import {
-  Plane, Camera, Play, Music2,
-  Flame, Target, Plus, Droplets, Smartphone,
-  Calendar, CheckCircle2, ChevronDown, ChevronUp, FileText, Sparkles
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { Select } from "~/components/ui/select";
-import { kvGet, kvAddItem } from "~/lib/kv.server";
+import { useState } from "react";
+import { useLoaderData, Form, useFetcher } from "react-router";
+import { Camera, Play, Music2, Plus, Droplets, Smartphone, ChevronDown, ChevronUp, Sparkles, RefreshCw, ArrowRight } from "lucide-react";
+import { kvGet, kvSet, kvAddItem } from "~/lib/kv.server";
 import { getConnectionStatus } from "~/lib/analytics.server";
-import { fetchYouTubeStats } from "~/lib/youtube.server";
-import { fetchInstagramStats } from "~/lib/instagram.server";
-import { fetchTikTokStats } from "~/lib/tiktok.server";
+import { generateDailyIdeas } from "~/lib/ai.server";
 import { PILLAR_CONFIG, WEEKLY_CADENCE, PLATFORM_CONFIG, MANAGER_DIRECTIVES } from "~/lib/constants";
 import { formatNumber, generateId } from "~/lib/utils";
-import { cn } from "~/lib/utils";
 import type { ContentItem, AnalyticsSnapshot, Idea, AtlasMetric } from "~/lib/types";
 import type { Route } from "./+types/dashboard";
-import { useState } from "react";
 
-export function meta() {
-  return [{ title: "Command Center — FlyWithGarrett" }];
-}
+export function meta() { return [{ title: "Command Center — FlyWithGarrett" }]; }
 
 export async function loader() {
-  const [contentItems, snapshots, ideas, atlasMetrics, connections] = await Promise.all([
+  const [contentItems, snapshots, connections, atlasMetrics, dailyIdeas] = await Promise.all([
     kvGet<ContentItem[]>("content:items"),
     kvGet<AnalyticsSnapshot[]>("analytics:snapshots"),
-    kvGet<Idea[]>("ideas:bank"),
-    kvGet<AtlasMetric[]>("atlas:metrics"),
     getConnectionStatus(),
+    kvGet<AtlasMetric[]>("atlas:metrics"),
+    kvGet<{ ideas: { hook: string; format: string; platform: string; score: number }[]; date: string; pillar: string }>("daily:ideas"),
   ]);
 
-  // Get live platform data from cache
-  const [igData, ytData, ttData] = await Promise.all([
-    connections.instagram ? fetchInstagramStats() : null,
-    connections.youtube ? fetchYouTubeStats() : null,
-    connections.tiktok ? fetchTikTokStats() : null,
-  ]);
-
-  const today = new Date().toISOString().split("T")[0];
   const todayDow = new Date().getDay();
   const todayCadence = WEEKLY_CADENCE[todayDow];
-
-  const postedItems = (contentItems ?? []).filter((i) => i.status === "posted" && i.postedAt);
-  const streak = calculateStreak(postedItems);
-
-  const startOfWeek = getStartOfWeek(new Date());
-  const weekItems = (contentItems ?? []).filter((i) => {
-    const d = i.scheduledAt ? new Date(i.scheduledAt) : null;
-    return d && d >= startOfWeek;
-  });
-
+  const today = new Date().toISOString().split("T")[0];
   const todayContent = (contentItems ?? []).filter((i) => i.scheduledAt?.startsWith(today));
 
-  // Platform stats — prefer live data, fallback to manual snapshots
-  const platformStats = [
-    {
-      platform: "instagram" as const,
-      label: "Instagram",
-      followers: igData?.stats?.followers ?? getLatest(snapshots ?? [], "instagram"),
-      connected: connections.instagram,
-      color: "#E1306C",
-    },
-    {
-      platform: "youtube" as const,
-      label: "YouTube",
-      followers: ytData?.stats?.followers ?? getLatest(snapshots ?? [], "youtube"),
-      connected: connections.youtube,
-      color: "#FF0000",
-    },
-    {
-      platform: "tiktok" as const,
-      label: "TikTok",
-      followers: ttData?.stats?.followers ?? getLatest(snapshots ?? [], "tiktok"),
-      connected: connections.tiktok,
-      color: "#00F2EA",
-    },
-  ];
+  const platformStats = (["instagram", "youtube", "tiktok"] as const).map((p) => {
+    const latest = (snapshots ?? []).filter((s) => s.platform === p).sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())[0];
+    return { platform: p, followers: latest?.followers ?? 0, connected: connections[p], label: PLATFORM_CONFIG[p].label, color: PLATFORM_CONFIG[p].color };
+  });
 
-  const latestAtlas = (atlasMetrics ?? []).sort(
-    (a, b) => new Date(b.recordedMonth).getTime() - new Date(a.recordedMonth).getTime()
-  )[0] ?? null;
+  const latestAtlas = (atlasMetrics ?? []).sort((a, b) => new Date(b.recordedMonth).getTime() - new Date(a.recordedMonth).getTime())[0] ?? null;
 
-  return {
-    todayContent,
-    todayCadence,
-    streak,
-    weekPlanned: weekItems.length,
-    weekPosted: weekItems.filter((i) => i.status === "posted").length,
-    platformStats,
-    latestAtlas,
-    ideasCount: (ideas ?? []).length,
-    connections,
-  };
+  return { todayCadence, todayContent, platformStats, latestAtlas, dailyIdeas: dailyIdeas?.date === today ? dailyIdeas : null };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
-  if (formData.get("intent") === "add-idea") {
+  const intent = formData.get("intent");
+
+  if (intent === "generate-daily") {
+    const pillar = formData.get("pillar") as string;
+    const desc = formData.get("description") as string;
+    const ideas = await generateDailyIdeas(pillar, desc);
+    const today = new Date().toISOString().split("T")[0];
+    await kvSet("daily:ideas", { ideas, date: today, pillar });
+    return { ok: true };
+  }
+  if (intent === "use-idea") {
     const idea: Idea = {
-      id: generateId(),
-      title: formData.get("title") as string,
+      id: generateId(), title: formData.get("hook") as string,
       pillar: formData.get("pillar") as Idea["pillar"],
-      hookDraft: formData.get("hookDraft") as string || "",
-      notes: "",
-      status: "raw",
+      hookDraft: formData.get("hook") as string, notes: "", status: "raw",
       createdAt: new Date().toISOString(),
     };
     await kvAddItem("ideas:bank", idea);
+    return { saved: true };
   }
   return { ok: true };
 }
 
-function calculateStreak(items: ContentItem[]): number {
-  if (!items.length) return 0;
-  const dates = [...new Set(items.map((i) => i.postedAt!.split("T")[0]))].sort().reverse();
-  let streak = 0;
-  const today = new Date();
-  for (let i = 0; i < dates.length; i++) {
-    const expected = new Date(today);
-    expected.setDate(expected.getDate() - i);
-    if (dates[i] === expected.toISOString().split("T")[0]) streak++;
-    else break;
-  }
-  return streak;
-}
-
-function getStartOfWeek(d: Date): Date {
-  const r = new Date(d);
-  r.setDate(r.getDate() - r.getDay());
-  r.setHours(0, 0, 0, 0);
-  return r;
-}
-
-function getLatest(snapshots: AnalyticsSnapshot[], platform: string): number {
-  const s = snapshots.filter((x) => x.platform === platform).sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())[0];
-  return s?.followers ?? 0;
-}
-
-const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  instagram: Camera,
-  tiktok: Music2,
-  youtube: Play,
-};
+const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = { instagram: Camera, youtube: Play, tiktok: Music2 };
 
 export default function Dashboard() {
-  const data = useLoaderData<typeof loader>();
-  const [strategyOpen, setStrategyOpen] = useState(false);
-  const weekProgress = data.weekPlanned > 0 ? (data.weekPosted / data.weekPlanned) * 100 : 0;
+  const { todayCadence, todayContent, platformStats, latestAtlas, dailyIdeas } = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
+  const [directivesOpen, setDirectivesOpen] = useState(false);
+  const pillarConfig = PILLAR_CONFIG[todayCadence.pillar];
+  const isGenerating = fetcher.state !== "idle";
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-title text-white">Command Center</h1>
-          <p className="text-[13px] text-[#71717A] mt-1">
-            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-            {" — "}
-            <span style={{ color: PILLAR_CONFIG[data.todayCadence.pillar].color }}>
-              {data.todayCadence.label}
-            </span>
-          </p>
+    <div className="space-y-10">
+      {/* Date + Focus */}
+      <div>
+        <p className="text-title">{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</p>
+        <div className="flex items-center gap-2 mt-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pillarConfig.color }} />
+          <p className="text-[14px] font-medium" style={{ color: pillarConfig.color }}>{todayCadence.label}</p>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-2 bg-white/[0.06] border border-[rgba(255,255,255,0.06)] text-white hover:bg-white/[0.1]">
-              <Plus className="w-4 h-4" /> Quick Idea
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Capture Idea</DialogTitle></DialogHeader>
-            <Form method="post" className="space-y-4">
-              <input type="hidden" name="intent" value="add-idea" />
-              <Input name="title" placeholder="Idea title" required />
-              <Select name="pillar" defaultValue="lifestyle">
-                {Object.entries(PILLAR_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-              </Select>
-              <Textarea name="hookDraft" placeholder="Hook draft (optional)" rows={3} />
-              <Button type="submit" className="w-full bg-white text-[#08090A] hover:bg-white/90">Save Idea</Button>
-            </Form>
-          </DialogContent>
-        </Dialog>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Flame className="w-4 h-4 text-orange-400" />
-            <span className="text-section">Streak</span>
+      {/* Today's Content Brief */}
+      <div className="card-static p-6" style={{ borderLeft: `2px solid ${pillarConfig.color}` }}>
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4" style={{ color: pillarConfig.color }} />
+            <p className="text-[15px] font-medium text-white">Today's Content Brief</p>
           </div>
-          <p className="text-stat">{data.streak}</p>
-          <p className="text-[12px] text-[#71717A] mt-1">days consecutive</p>
+          <fetcher.Form method="post">
+            <input type="hidden" name="intent" value="generate-daily" />
+            <input type="hidden" name="pillar" value={todayCadence.label} />
+            <input type="hidden" name="description" value={pillarConfig.description} />
+            <button type="submit" disabled={isGenerating} className="btn-ghost flex items-center gap-1.5 text-[12px]">
+              <RefreshCw className={`w-3 h-3 ${isGenerating ? "animate-spin" : ""}`} />
+              {isGenerating ? "Generating..." : dailyIdeas ? "Regenerate" : "Generate Ideas"}
+            </button>
+          </fetcher.Form>
         </div>
-        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Target className="w-4 h-4 text-blue-400" />
-            <span className="text-section">Weekly</span>
+
+        {!dailyIdeas ? (
+          <div className="text-center py-10">
+            <Sparkles className="w-8 h-8 mx-auto mb-3" style={{ color: `${pillarConfig.color}30` }} />
+            <p className="text-[14px] text-white mb-1">No ideas generated yet for today</p>
+            <p className="text-micro">Click "Generate Ideas" to get 3 AI-powered content ideas for {todayCadence.label}</p>
           </div>
-          <p className="text-stat">{data.weekPosted}<span className="text-[20px] text-[#71717A]">/{data.weekPlanned}</span></p>
-          <p className="text-[12px] text-[#71717A] mt-1">posts completed</p>
-        </div>
-        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-purple-400" />
-            <span className="text-section">Ideas</span>
+        ) : (
+          <div className="space-y-3">
+            {dailyIdeas.ideas.map((idea, i) => (
+              <div key={i} className="flex items-start justify-between gap-4 p-4 rounded-[12px] bg-[rgba(255,255,255,0.03)]">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-medium text-white leading-snug">"{idea.hook}"</p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="pill">{idea.format}</span>
+                    <span className="pill">{idea.platform}</span>
+                    <span className="text-micro">Score: {idea.score}/100</span>
+                  </div>
+                </div>
+                <Form method="post">
+                  <input type="hidden" name="intent" value="use-idea" />
+                  <input type="hidden" name="hook" value={idea.hook} />
+                  <input type="hidden" name="pillar" value={todayCadence.pillar} />
+                  <button type="submit" className="btn-ghost text-[11px] flex items-center gap-1 shrink-0">
+                    Use This <ArrowRight className="w-3 h-3" />
+                  </button>
+                </Form>
+              </div>
+            ))}
           </div>
-          <p className="text-stat">{data.ideasCount}</p>
-          <p className="text-[12px] text-[#71717A] mt-1">banked ideas</p>
-        </div>
-        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span className="text-section">Progress</span>
-          </div>
-          <div className="w-full bg-white/[0.06] rounded-full h-2 mt-3 mb-2">
-            <div className="bg-emerald-400 h-2 rounded-full transition-all" style={{ width: `${weekProgress}%` }} />
-          </div>
-          <p className="text-[12px] text-[#71717A]">{Math.round(weekProgress)}% weekly goal</p>
-        </div>
+        )}
       </div>
 
       {/* Platform Health */}
       <div>
-        <p className="text-section mb-3">Platform Health</p>
+        <p className="text-section mb-4">Platform Health</p>
         <div className="grid grid-cols-3 gap-3">
-          {data.platformStats.map((p) => {
+          {platformStats.map((p) => {
             const Icon = platformIcons[p.platform];
             return (
-              <div key={p.platform} className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-4">
-                <div className="flex items-center justify-between mb-3">
+              <div key={p.platform} className="card-static p-5">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     {Icon && <Icon className="w-4 h-4" style={{ color: p.color }} />}
-                    <span className="text-[13px] text-[#A1A1AA]">{p.label}</span>
+                    <span className="text-[13px] text-[#ffffff60]">{p.label}</span>
                   </div>
                   {p.connected ? (
-                    <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Live</span>
+                    <span className="text-[10px] text-[#30d158] bg-[#30d15815] px-2 py-0.5 rounded-full">Connected</span>
                   ) : (
-                    <a href={`/auth/${p.platform}`} className="text-[10px] text-blue-400 hover:text-blue-300">Connect</a>
+                    <a href={`/auth/${p.platform}`} className="text-[11px] text-[#0a84ff]">Connect</a>
                   )}
                 </div>
-                <p className="text-stat-sm text-white">{formatNumber(p.followers)}</p>
+                <p className="text-stat">{formatNumber(p.followers)}</p>
               </div>
             );
           })}
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Today's Agenda */}
-        <div className="lg:col-span-2 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-4 h-4 text-[#F97316]" />
-            <span className="text-[14px] font-medium text-white">Today's Agenda</span>
-          </div>
-          {data.todayContent.length === 0 ? (
-            <div className="text-center py-10">
-              <Calendar className="w-6 h-6 text-[#71717A] mx-auto mb-2" />
-              <p className="text-[13px] text-[#71717A]">No content scheduled for today.</p>
-              <p className="text-[12px] text-[#52525B] mt-1">
-                Focus: <span style={{ color: PILLAR_CONFIG[data.todayCadence.pillar].color }}>{data.todayCadence.label}</span>
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {data.todayContent.map((item) => (
-                <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.03]">
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: PILLAR_CONFIG[item.pillar].color }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-white truncate">{item.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[11px]" style={{ color: PILLAR_CONFIG[item.pillar].color }}>{PILLAR_CONFIG[item.pillar].label}</span>
-                      {item.platforms.map((p) => {
-                        const Icon = platformIcons[p];
-                        return Icon ? <Icon key={p} className="w-3 h-3 text-[#71717A]" /> : null;
-                      })}
-                    </div>
-                  </div>
-                  <span className={cn("text-[11px] px-2 py-0.5 rounded", item.status === "posted" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400")}>{item.status}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Currently Building */}
-        <div className="space-y-3">
-          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-4">
+      {/* Current Projects */}
+      <div>
+        <p className="text-section mb-4">Current Projects</p>
+        <div className="grid md:grid-cols-2 gap-3">
+          <div className="card-static p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Droplets className="w-4 h-4 text-emerald-400" />
-              <span className="text-[13px] font-medium text-white">Atlas Hydration</span>
+              <Droplets className="w-4 h-4 text-[#30d158]" />
+              <span className="text-[14px] font-medium text-white">Atlas Hydration</span>
             </div>
             <div className="space-y-2 text-[13px]">
-              <div className="flex justify-between"><span className="text-[#71717A]">Status</span><span className="text-emerald-400">Active</span></div>
-              <div className="flex justify-between"><span className="text-[#71717A]">Products</span><span className="text-white">4 Flavors</span></div>
-              {data.latestAtlas && (
-                <div className="flex justify-between"><span className="text-[#71717A]">Revenue</span><span className="text-white">${data.latestAtlas.revenue.toLocaleString()}</span></div>
-              )}
+              <div className="flex justify-between"><span className="text-[#ffffff50]">Status</span><span className="text-[#30d158]">Active</span></div>
+              <div className="flex justify-between"><span className="text-[#ffffff50]">Products</span><span className="text-white">4 Flavors</span></div>
+              {latestAtlas && <div className="flex justify-between"><span className="text-[#ffffff50]">Revenue</span><span className="text-white">${latestAtlas.revenue.toLocaleString()}</span></div>}
             </div>
           </div>
-          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-4">
+          <div className="card-static p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Smartphone className="w-4 h-4 text-blue-400" />
-              <span className="text-[13px] font-medium text-white">SkyWay App</span>
+              <Smartphone className="w-4 h-4 text-[#64d2ff]" />
+              <span className="text-[14px] font-medium text-white">SkyWay</span>
             </div>
             <div className="space-y-2 text-[13px]">
-              <div className="flex justify-between"><span className="text-[#71717A]">Status</span><span className="text-blue-400">In Dev</span></div>
-              <div className="flex justify-between"><span className="text-[#71717A]">Phase</span><span className="text-white">MVP Build</span></div>
+              <div className="flex justify-between"><span className="text-[#ffffff50]">Status</span><span className="text-[#0a84ff]">In Dev</span></div>
+              <div className="flex justify-between"><span className="text-[#ffffff50]">Phase</span><span className="text-white">MVP Build</span></div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Manager Strategy Card */}
-      <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213]">
-        <button
-          onClick={() => setStrategyOpen(!strategyOpen)}
-          className="w-full flex items-center justify-between p-4 text-left"
-        >
-          <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#F97316]" />
-            <span className="text-[14px] font-medium text-white">Manager Strategy Directives</span>
-          </div>
-          {strategyOpen ? <ChevronUp className="w-4 h-4 text-[#71717A]" /> : <ChevronDown className="w-4 h-4 text-[#71717A]" />}
+      {/* Manager Directives */}
+      <div className="card-static overflow-hidden">
+        <button onClick={() => setDirectivesOpen(!directivesOpen)} className="w-full flex items-center justify-between p-5 text-left">
+          <span className="text-[14px] font-medium text-white">Manager Directives</span>
+          {directivesOpen ? <ChevronUp className="w-4 h-4 text-[#ffffff30]" /> : <ChevronDown className="w-4 h-4 text-[#ffffff30]" />}
         </button>
-        {strategyOpen && (
-          <div className="px-4 pb-4 space-y-2">
+        {directivesOpen && (
+          <div className="px-5 pb-5 space-y-2.5">
             {MANAGER_DIRECTIVES.map((d, i) => (
-              <div key={i} className="flex items-start gap-2 text-[13px]">
-                <span className="text-[#71717A] mt-0.5">•</span>
-                <span className="text-[#A1A1AA]">{d}</span>
-              </div>
+              <label key={i} className="flex items-start gap-3 text-[13px] cursor-pointer group">
+                <input type="checkbox" className="mt-0.5 rounded border-[rgba(255,255,255,0.2)] bg-transparent" />
+                <span className="text-[#ffffffaa] group-hover:text-white transition-colors">{d}</span>
+              </label>
             ))}
           </div>
         )}

@@ -1,27 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLoaderData, Form, useFetcher } from "react-router";
 import {
   Target, Plus, Camera, Play, Music2,
   Link2, RefreshCw, Sparkles, X, CheckCircle, AlertCircle,
-  Lightbulb, Rocket, Crosshair
+  Lightbulb, Rocket, Crosshair,
 } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend
+  Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Input } from "~/components/ui/input";
-import { Select } from "~/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "~/components/ui/dialog";
 import { getAggregatedAnalytics } from "~/lib/analytics.server";
-import { generateAnalysis, getAnalysisHistory } from "~/lib/analysis.server";
+import { generateAnalysis } from "~/lib/ai.server";
 import { kvGet, kvAddItem } from "~/lib/kv.server";
 import { PLATFORM_CONFIG, PLATFORMS, PILLAR_CONFIG, PILLARS } from "~/lib/constants";
 import { formatNumber, generateId, cn } from "~/lib/utils";
-import type { AnalyticsSnapshot, Goal, AtlasMetric, ContentItem, Platform, AnalysisResult } from "~/lib/types";
+import type { AnalyticsSnapshot, Goal, ContentItem, Platform, AnalysisResult } from "~/lib/types";
 import type { Route } from "./+types/analytics";
 
 export function meta() {
@@ -29,22 +22,18 @@ export function meta() {
 }
 
 export async function loader() {
-  const [analytics, snapshots, goals, atlasMetrics, contentItems, analysisHistory] = await Promise.all([
+  const [analytics, snapshots, goals, contentItems] = await Promise.all([
     getAggregatedAnalytics(),
     kvGet<AnalyticsSnapshot[]>("analytics:snapshots"),
     kvGet<Goal[]>("analytics:goals"),
-    kvGet<AtlasMetric[]>("atlas:metrics"),
     kvGet<ContentItem[]>("content:items"),
-    getAnalysisHistory("all"),
   ]);
 
   return {
     analytics,
     snapshots: snapshots ?? [],
     goals: goals ?? [],
-    atlasMetrics: atlasMetrics ?? [],
     contentItems: contentItems ?? [],
-    analysisHistory,
   };
 }
 
@@ -76,15 +65,34 @@ export async function action({ request }: Route.ActionArgs) {
     };
     await kvAddItem("analytics:goals", goal);
   } else if (intent === "run-analysis") {
-    const platform = (formData.get("platform") as Platform | "all") || "all";
-    const analytics = await getAggregatedAnalytics();
-    const allTopPosts = [
-      ...analytics.platforms.instagram.topPosts,
-      ...analytics.platforms.youtube.topPosts,
-      ...analytics.platforms.tiktok.topPosts,
-    ];
-    const result = await generateAnalysis(platform, null, allTopPosts);
-    return { analysis: result };
+    const snapshots = await kvGet<AnalyticsSnapshot[]>("analytics:snapshots") ?? [];
+    const contentItems = await kvGet<ContentItem[]>("content:items") ?? [];
+    const dataPayload = JSON.stringify({ snapshots: snapshots.slice(-20), contentItems: contentItems.slice(-20) });
+    const resultText = await generateAnalysis(dataPayload);
+    if (resultText) {
+      try {
+        const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          const result: AnalysisResult = {
+            id: generateId(),
+            platform: "all",
+            createdAt: new Date().toISOString(),
+            overallScore: parsed.overallScore || 5,
+            scoreSummary: parsed.scoreSummary || "",
+            weeklyFocus: parsed.weeklyFocus || "",
+            whatsWorking: parsed.whatsWorking || [],
+            whatsNotWorking: parsed.whatsNotWorking || [],
+            contentGaps: parsed.contentGaps || [],
+            topOpportunities: parsed.topOpportunities || [],
+          };
+          return { analysis: result };
+        }
+      } catch {
+        // parse error
+      }
+    }
+    return { analysis: null };
   }
 
   return { ok: true };
@@ -98,20 +106,31 @@ const chartColors: Record<string, string> = {
   instagram: "#E1306C", tiktok: "#00F2EA", youtube: "#FF0000",
 };
 
+const chartTooltipStyle = {
+  backgroundColor: "#111114",
+  border: "1px solid rgba(255,255,255,0.07)",
+  borderRadius: "12px",
+  fontSize: "12px",
+};
+
 export default function AnalyticsPage() {
-  const { analytics, snapshots, goals, atlasMetrics, contentItems, analysisHistory } = useLoaderData<typeof loader>();
+  const { analytics, snapshots, goals, contentItems } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [activeAnalysis, setActiveAnalysis] = useState<AnalysisResult | null>(null);
+  const [showLogStats, setShowLogStats] = useState(false);
+  const [showAddGoal, setShowAddGoal] = useState(false);
 
   const isAnalyzing = fetcher.state !== "idle";
 
   // When analysis completes
   const analysisResult = (fetcher.data as any)?.analysis;
-  if (analysisResult && !activeAnalysis) {
-    setActiveAnalysis(analysisResult);
-    setAnalysisOpen(true);
-  }
+  useEffect(() => {
+    if (analysisResult && !activeAnalysis) {
+      setActiveAnalysis(analysisResult);
+      setAnalysisOpen(true);
+    }
+  }, [analysisResult]);
 
   const platformCards = (["instagram", "youtube", "tiktok"] as Platform[]).map((p) => {
     const data = analytics.platforms[p];
@@ -122,7 +141,6 @@ export default function AnalyticsPage() {
   const growthData = (() => {
     const dateMap = new Map<string, Record<string, number>>();
     snapshots.forEach((s) => {
-      if (s.platform === "threads" || s.platform === "x") return;
       const date = s.recordedAt.split("T")[0];
       if (!dateMap.has(date)) dateMap.set(date, {});
       dateMap.get(date)![s.platform] = s.followers;
@@ -136,44 +154,35 @@ export default function AnalyticsPage() {
     color: PILLAR_CONFIG[p].color,
   }));
 
-  const runAnalysis = (platform: string) => {
+  const runAnalysis = () => {
     setActiveAnalysis(null);
-    fetcher.submit({ intent: "run-analysis", platform }, { method: "post" });
+    fetcher.submit({ intent: "run-analysis" }, { method: "post" });
   };
 
   return (
     <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-title text-white">Analytics</h1>
-          <p className="text-[13px] text-[#71717A] mt-1">Platform performance & AI insights</p>
+          <h1 className="text-title">Analytics</h1>
+          <p className="text-micro mt-1">Platform performance & AI insights</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => runAnalysis("all")} disabled={isAnalyzing}
-            className="gap-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20">
+          <button
+            onClick={runAnalysis}
+            disabled={isAnalyzing}
+            className="btn-ghost h-9 px-4 text-[13px] font-medium flex items-center gap-2"
+            style={{ borderColor: "rgba(48,209,88,0.3)", color: "#30d158" }}
+          >
             <Sparkles className="w-3.5 h-3.5" />
-            {isAnalyzing ? "Analyzing..." : "AI Analysis"}
-          </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2 bg-white/[0.06] border border-[rgba(255,255,255,0.06)] text-white hover:bg-white/[0.1]">
-                <Plus className="w-4 h-4" /> Log Stats
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Log Platform Stats</DialogTitle></DialogHeader>
-              <Form method="post" className="space-y-4">
-                <input type="hidden" name="intent" value="add-snapshot" />
-                <Select name="platform" defaultValue="instagram">
-                  {PLATFORMS.map((p) => <option key={p} value={p}>{PLATFORM_CONFIG[p].label}</option>)}
-                </Select>
-                <Input name="followers" type="number" placeholder="Followers" required />
-                <Input name="views" type="number" placeholder="Views (optional)" />
-                <Input name="engagementRate" type="number" step="0.01" placeholder="Engagement Rate %" />
-                <DialogClose asChild><Button type="submit" className="w-full bg-white text-[#08090A]">Save</Button></DialogClose>
-              </Form>
-            </DialogContent>
-          </Dialog>
+            {isAnalyzing ? "Analyzing..." : "Run AI Analysis"}
+          </button>
+          <button
+            onClick={() => setShowLogStats(true)}
+            className="btn-ghost h-9 px-4 text-[13px] font-medium flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> Log Stats
+          </button>
         </div>
       </div>
 
@@ -182,31 +191,31 @@ export default function AnalyticsPage() {
         {platformCards.map((p) => {
           const Icon = platformIcons[p.platform];
           return (
-            <div key={p.platform} className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-5">
+            <div key={p.platform} className="card-static p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   {Icon && <Icon className="w-4 h-4" style={{ color: p.color }} />}
                   <span className="text-[13px] font-medium text-white">{p.label}</span>
                 </div>
                 {p.connected ? (
-                  <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Connected</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(48,209,88,0.1)", color: "#30d158" }}>Connected</span>
                 ) : (
-                  <a href={`/auth/${p.platform}`} className="text-[11px] text-blue-400 flex items-center gap-1 hover:text-blue-300">
+                  <a href={`/auth/${p.platform}`} className="text-[11px] flex items-center gap-1 hover:opacity-80" style={{ color: "#0a84ff" }}>
                     <Link2 className="w-3 h-3" /> Connect
                   </a>
                 )}
               </div>
-              <p className="text-stat text-white">{formatNumber(p.stats?.followers ?? 0)}</p>
-              <p className="text-[12px] text-[#71717A] mt-1">followers</p>
+              <p className="text-stat">{formatNumber(p.stats?.followers ?? 0)}</p>
+              <p className="text-micro mt-1">followers</p>
               {p.stats?.lastSynced && (
-                <p className="text-[10px] text-[#52525B] mt-2">
+                <p className="text-[10px] text-[#ffffff30] mt-2">
                   Synced {new Date(p.stats.lastSynced).toLocaleString("en-US", { hour: "numeric", minute: "2-digit" })}
                 </p>
               )}
               {p.topPosts.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.06)]">
-                  <p className="text-[11px] text-[#71717A] mb-1">Top recent content</p>
-                  <p className="text-[12px] text-[#A1A1AA] truncate">{p.topPosts[0].title}</p>
+                <div className="mt-3 pt-3 divider">
+                  <p className="text-micro mb-1">Top recent content</p>
+                  <p className="text-[12px] text-[#ffffffcc] truncate">{p.topPosts[0].title}</p>
                 </div>
               )}
             </div>
@@ -215,167 +224,200 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Total Audience */}
-      <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-5 text-center">
-        <p className="text-section mb-2">Total Audience</p>
-        <p className="text-[40px] font-semibold text-white tracking-tight" style={{ fontVariantNumeric: "tabular-nums" }}>
+      <div className="card-static p-5 text-center">
+        <p className="text-section mb-2">TOTAL AUDIENCE</p>
+        <p className="text-stat" style={{ fontSize: "40px" }}>
           {formatNumber(analytics.totalFollowers || platformCards.reduce((s, p) => s + (p.stats?.followers ?? 0), 0))}
         </p>
       </div>
 
-      <Tabs defaultValue="growth">
-        <TabsList className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
-          <TabsTrigger value="growth">Growth</TabsTrigger>
-          <TabsTrigger value="pillars">Pillars</TabsTrigger>
-          <TabsTrigger value="goals">Goals</TabsTrigger>
-        </TabsList>
+      {/* Follower Growth Chart */}
+      <div className="card-static p-5">
+        <p className="text-[14px] font-medium text-white mb-4">Follower Growth</p>
+        {growthData.length < 2 ? (
+          <div className="text-center py-12 text-micro">Log at least 2 snapshots to see trends.</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={growthData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis dataKey="date" stroke="#ffffff30" tick={{ fontSize: 11 }} />
+              <YAxis stroke="#ffffff30" tick={{ fontSize: 11 }} />
+              <Tooltip contentStyle={chartTooltipStyle} />
+              <Legend />
+              {PLATFORMS.map((p) => (
+                <Line key={p} type="monotone" dataKey={p} stroke={chartColors[p]} strokeWidth={2} dot={false} name={PLATFORM_CONFIG[p].label} />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
 
-        <TabsContent value="growth">
-          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-5">
-            <p className="text-[14px] font-medium text-white mb-4">Follower Growth</p>
-            {growthData.length < 2 ? (
-              <div className="text-center py-12 text-[13px] text-[#71717A]">Log at least 2 snapshots to see trends.</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={growthData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis dataKey="date" stroke="#52525B" tick={{ fontSize: 11 }} />
-                  <YAxis stroke="#52525B" tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ backgroundColor: "#111213", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", fontSize: "12px" }} />
-                  <Legend />
-                  {PLATFORMS.map((p) => <Line key={p} type="monotone" dataKey={p} stroke={chartColors[p]} strokeWidth={2} dot={false} name={PLATFORM_CONFIG[p].label} />)}
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </TabsContent>
+      {/* Content by Pillar Chart */}
+      <div className="card-static p-5">
+        <p className="text-[14px] font-medium text-white mb-4">Content by Pillar</p>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={pillarEngagement}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey="pillar" stroke="#ffffff30" tick={{ fontSize: 11 }} />
+            <YAxis stroke="#ffffff30" tick={{ fontSize: 11 }} />
+            <Tooltip contentStyle={chartTooltipStyle} />
+            <Bar dataKey="count" name="Posts" radius={[4, 4, 0, 0]}>
+              {pillarEngagement.map((e, i) => (
+                <rect key={i} fill={e.color} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-        <TabsContent value="pillars">
-          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-5">
-            <p className="text-[14px] font-medium text-white mb-4">Content by Pillar</p>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={pillarEngagement}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="pillar" stroke="#52525B" tick={{ fontSize: 11 }} />
-                <YAxis stroke="#52525B" />
-                <Tooltip contentStyle={{ backgroundColor: "#111213", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px" }} />
-                <Bar dataKey="count" name="Posts" radius={[4, 4, 0, 0]}>
-                  {pillarEngagement.map((e, i) => <rect key={i} fill={e.color} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+      {/* Goals Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-section">GOALS</h2>
+          <button onClick={() => setShowAddGoal(true)} className="btn-ghost h-8 px-3 text-[13px] font-medium flex items-center gap-1.5">
+            <Plus className="w-3.5 h-3.5" /> Add Goal
+          </button>
+        </div>
+        {goals.length === 0 ? (
+          <div className="card-static p-12 text-center">
+            <Target className="w-6 h-6 text-[#ffffff50] mx-auto mb-2" />
+            <p className="text-micro">No goals set yet.</p>
           </div>
-        </TabsContent>
-
-        <TabsContent value="goals">
-          <div className="flex justify-end mb-4">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-2 bg-white/[0.06] border border-[rgba(255,255,255,0.06)] text-white hover:bg-white/[0.1]">
-                  <Plus className="w-4 h-4" /> Add Goal
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>New Goal</DialogTitle></DialogHeader>
-                <Form method="post" className="space-y-4">
-                  <input type="hidden" name="intent" value="add-goal" />
-                  <Select name="platform" defaultValue="instagram">
-                    {PLATFORMS.map((p) => <option key={p} value={p}>{PLATFORM_CONFIG[p].label}</option>)}
-                  </Select>
-                  <Input name="metric" placeholder="Metric (e.g. Followers)" required />
-                  <Input name="target" type="number" placeholder="Target" required />
-                  <Input name="current" type="number" placeholder="Current" />
-                  <Input name="month" type="month" required />
-                  <DialogClose asChild><Button type="submit" className="w-full bg-white text-[#08090A]">Save</Button></DialogClose>
-                </Form>
-              </DialogContent>
-            </Dialog>
-          </div>
-          {goals.length === 0 ? (
-            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-12 text-center">
-              <Target className="w-6 h-6 text-[#71717A] mx-auto mb-2" />
-              <p className="text-[13px] text-[#71717A]">No goals set yet.</p>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-3">
-              {goals.map((goal) => {
-                const progress = goal.target > 0 ? Math.min((goal.current / goal.target) * 100, 100) : 0;
-                return (
-                  <div key={goal.id} className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111213] p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[13px] font-medium text-white">{PLATFORM_CONFIG[goal.platform].label} — {goal.metric}</span>
-                      <span className="text-[11px] text-[#71717A]">{goal.month}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-[#71717A] mb-1">
-                      <span>{formatNumber(goal.current)}</span>
-                      <span>{formatNumber(goal.target)}</span>
-                    </div>
-                    <div className="w-full bg-white/[0.06] rounded-full h-1.5">
-                      <div className="bg-emerald-400 h-1.5 rounded-full" style={{ width: `${progress}%` }} />
-                    </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-3">
+            {goals.map((goal) => {
+              const progress = goal.target > 0 ? Math.min((goal.current / goal.target) * 100, 100) : 0;
+              return (
+                <div key={goal.id} className="card-static p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[13px] font-medium text-white">{PLATFORM_CONFIG[goal.platform].label} — {goal.metric}</span>
+                    <span className="text-micro">{goal.month}</span>
                   </div>
-                );
-              })}
+                  <div className="flex items-center justify-between text-micro mb-1">
+                    <span>{formatNumber(goal.current)}</span>
+                    <span>{formatNumber(goal.target)}</span>
+                  </div>
+                  <div className="w-full bg-[rgba(255,255,255,0.06)] rounded-full h-1.5">
+                    <div className="h-1.5 rounded-full" style={{ width: `${progress}%`, backgroundColor: "#30d158" }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Log Stats Dialog */}
+      {showLogStats && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowLogStats(false)} />
+          <div className="relative w-full max-w-md card-static p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-[16px] font-medium text-white">Log Platform Stats</h2>
+              <button onClick={() => setShowLogStats(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
+                <X className="w-4 h-4 text-[#ffffff50]" />
+              </button>
             </div>
-          )}
-        </TabsContent>
-      </Tabs>
+            <Form method="post" className="space-y-4" onSubmit={() => setShowLogStats(false)}>
+              <input type="hidden" name="intent" value="add-snapshot" />
+              <select name="platform" defaultValue="instagram" className="input-field w-full">
+                {PLATFORMS.map((p) => <option key={p} value={p}>{PLATFORM_CONFIG[p].label}</option>)}
+              </select>
+              <input name="followers" type="number" placeholder="Followers" required className="input-field w-full" />
+              <input name="views" type="number" placeholder="Views (optional)" className="input-field w-full" />
+              <input name="engagementRate" type="number" step="0.01" placeholder="Engagement Rate %" className="input-field w-full" />
+              <button type="submit" className="btn-primary w-full h-10 text-[13px] font-medium">Save</button>
+            </Form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Goal Dialog */}
+      {showAddGoal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowAddGoal(false)} />
+          <div className="relative w-full max-w-md card-static p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-[16px] font-medium text-white">New Goal</h2>
+              <button onClick={() => setShowAddGoal(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
+                <X className="w-4 h-4 text-[#ffffff50]" />
+              </button>
+            </div>
+            <Form method="post" className="space-y-4" onSubmit={() => setShowAddGoal(false)}>
+              <input type="hidden" name="intent" value="add-goal" />
+              <select name="platform" defaultValue="instagram" className="input-field w-full">
+                {PLATFORMS.map((p) => <option key={p} value={p}>{PLATFORM_CONFIG[p].label}</option>)}
+              </select>
+              <input name="metric" placeholder="Metric (e.g. Followers)" required className="input-field w-full" />
+              <input name="target" type="number" placeholder="Target" required className="input-field w-full" />
+              <input name="current" type="number" placeholder="Current" className="input-field w-full" />
+              <input name="month" type="month" required className="input-field w-full" />
+              <button type="submit" className="btn-primary w-full h-10 text-[13px] font-medium">Save</button>
+            </Form>
+          </div>
+        </div>
+      )}
 
       {/* AI Analysis Slide-over */}
       {analysisOpen && activeAnalysis && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/60" onClick={() => setAnalysisOpen(false)} />
-          <div className="relative w-full max-w-[600px] bg-[#0D0E0F] border-l border-[rgba(255,255,255,0.06)] overflow-y-auto slide-in-right">
-            <div className="sticky top-0 bg-[#0D0E0F] border-b border-[rgba(255,255,255,0.06)] p-5 flex items-center justify-between z-10">
+          <div className="relative w-full max-w-[600px] bg-[#080809] border-l border-[rgba(255,255,255,0.07)] overflow-y-auto">
+            <div className="sticky top-0 bg-[#080809] border-b border-[rgba(255,255,255,0.07)] p-5 flex items-center justify-between z-10">
               <div className="flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-emerald-400" />
+                <Sparkles className="w-5 h-5" style={{ color: "#30d158" }} />
                 <div>
                   <p className="text-[14px] font-medium text-white">AI Analysis</p>
-                  <p className="text-[11px] text-[#71717A]">{new Date(activeAnalysis.createdAt).toLocaleDateString()}</p>
+                  <p className="text-micro">{new Date(activeAnalysis.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <div className={cn(
                   "px-2.5 py-1 rounded-full text-[13px] font-semibold",
-                  activeAnalysis.overallScore >= 7 ? "bg-emerald-500/15 text-emerald-400" :
-                  activeAnalysis.overallScore >= 4 ? "bg-amber-500/15 text-amber-400" :
-                  "bg-red-500/15 text-red-400"
-                )}>
+                  activeAnalysis.overallScore >= 7 ? "text-[#30d158]" :
+                  activeAnalysis.overallScore >= 4 ? "text-[#ffd60a]" :
+                  "text-[#ff453a]"
+                )} style={{
+                  backgroundColor: activeAnalysis.overallScore >= 7 ? "rgba(48,209,88,0.15)" :
+                    activeAnalysis.overallScore >= 4 ? "rgba(255,214,10,0.15)" :
+                    "rgba(255,69,58,0.15)"
+                }}>
                   {activeAnalysis.overallScore}/10
                 </div>
-                <button onClick={() => setAnalysisOpen(false)} className="p-1 hover:bg-white/[0.06] rounded">
-                  <X className="w-4 h-4 text-[#71717A]" />
+                <button onClick={() => setAnalysisOpen(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
+                  <X className="w-4 h-4 text-[#ffffff50]" />
                 </button>
               </div>
             </div>
 
             <div className="p-5 space-y-6">
               {/* Score Summary */}
-              <div className="rounded-lg bg-white/[0.03] p-4">
-                <p className="text-[13px] text-[#A1A1AA]">{activeAnalysis.scoreSummary}</p>
+              <div className="rounded-lg bg-[rgba(255,255,255,0.03)] p-4">
+                <p className="text-body">{activeAnalysis.scoreSummary}</p>
               </div>
 
               {/* Weekly Focus */}
-              <div className="rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20 p-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: "rgba(48,209,88,0.06)", border: "1px solid rgba(48,209,88,0.2)" }}>
                 <div className="flex items-center gap-2 mb-2">
-                  <Crosshair className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[13px] font-medium text-emerald-400">This Week's Focus</span>
+                  <Crosshair className="w-4 h-4" style={{ color: "#30d158" }} />
+                  <span className="text-[13px] font-medium" style={{ color: "#30d158" }}>This Week&apos;s Focus</span>
                 </div>
-                <p className="text-[13px] text-[#ECECED]">{activeAnalysis.weeklyFocus}</p>
+                <p className="text-body">{activeAnalysis.weeklyFocus}</p>
               </div>
 
               {/* What's Working */}
               {activeAnalysis.whatsWorking.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <span className="text-section text-emerald-400">What's Working</span>
+                    <CheckCircle className="w-4 h-4" style={{ color: "#30d158" }} />
+                    <span className="text-section" style={{ color: "#30d158" }}>WHAT&apos;S WORKING</span>
                   </div>
                   <div className="space-y-2">
                     {activeAnalysis.whatsWorking.map((item, i) => (
-                      <div key={i} className="rounded-lg bg-emerald-500/[0.04] border border-emerald-500/10 p-3">
+                      <div key={i} className="rounded-lg p-3" style={{ backgroundColor: "rgba(48,209,88,0.04)", border: "1px solid rgba(48,209,88,0.1)" }}>
                         <p className="text-[13px] font-medium text-white">{item.insight}</p>
-                        <p className="text-[12px] text-[#71717A] mt-1">{item.evidence}</p>
-                        <p className="text-[12px] text-emerald-400 mt-1">{item.action}</p>
+                        <p className="text-micro mt-1">{item.evidence}</p>
+                        <p className="text-[12px] mt-1" style={{ color: "#30d158" }}>{item.action}</p>
                       </div>
                     ))}
                   </div>
@@ -386,15 +428,15 @@ export default function AnalyticsPage() {
               {activeAnalysis.whatsNotWorking.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <AlertCircle className="w-4 h-4 text-orange-400" />
-                    <span className="text-section text-orange-400">Needs Improvement</span>
+                    <AlertCircle className="w-4 h-4" style={{ color: "#ff9f0a" }} />
+                    <span className="text-section" style={{ color: "#ff9f0a" }}>NEEDS IMPROVEMENT</span>
                   </div>
                   <div className="space-y-2">
                     {activeAnalysis.whatsNotWorking.map((item, i) => (
-                      <div key={i} className="rounded-lg bg-orange-500/[0.04] border border-orange-500/10 p-3">
+                      <div key={i} className="rounded-lg p-3" style={{ backgroundColor: "rgba(255,159,10,0.04)", border: "1px solid rgba(255,159,10,0.1)" }}>
                         <p className="text-[13px] font-medium text-white">{item.insight}</p>
-                        <p className="text-[12px] text-[#71717A] mt-1">{item.evidence}</p>
-                        <p className="text-[12px] text-orange-400 mt-1">{item.action}</p>
+                        <p className="text-micro mt-1">{item.evidence}</p>
+                        <p className="text-[12px] mt-1" style={{ color: "#ff9f0a" }}>{item.action}</p>
                       </div>
                     ))}
                   </div>
@@ -405,14 +447,14 @@ export default function AnalyticsPage() {
               {activeAnalysis.contentGaps.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <Lightbulb className="w-4 h-4 text-purple-400" />
-                    <span className="text-section text-purple-400">Content Gaps</span>
+                    <Lightbulb className="w-4 h-4" style={{ color: "#bf5af2" }} />
+                    <span className="text-section" style={{ color: "#bf5af2" }}>CONTENT GAPS</span>
                   </div>
                   <div className="space-y-2">
                     {activeAnalysis.contentGaps.map((item, i) => (
-                      <div key={i} className="rounded-lg bg-purple-500/[0.04] border border-purple-500/10 p-3">
+                      <div key={i} className="rounded-lg p-3" style={{ backgroundColor: "rgba(191,90,242,0.04)", border: "1px solid rgba(191,90,242,0.1)" }}>
                         <p className="text-[13px] font-medium text-white">{item.pillar}: {item.gap}</p>
-                        <p className="text-[12px] text-purple-400 mt-1">{item.suggestion}</p>
+                        <p className="text-[12px] mt-1" style={{ color: "#bf5af2" }}>{item.suggestion}</p>
                       </div>
                     ))}
                   </div>
@@ -420,34 +462,40 @@ export default function AnalyticsPage() {
               )}
 
               {/* Opportunities */}
-              {activeAnalysis.topOpportunities.length > 0 && (
+              {activeAnalysis.topOpportunities && activeAnalysis.topOpportunities.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <Rocket className="w-4 h-4 text-blue-400" />
-                    <span className="text-section text-blue-400">Top Opportunities</span>
+                    <Rocket className="w-4 h-4" style={{ color: "#0a84ff" }} />
+                    <span className="text-section" style={{ color: "#0a84ff" }}>TOP OPPORTUNITIES</span>
                   </div>
                   <div className="space-y-2">
                     {activeAnalysis.topOpportunities.map((item, i) => (
-                      <div key={i} className="rounded-lg bg-blue-500/[0.04] border border-blue-500/10 p-3">
+                      <div key={i} className="rounded-lg p-3" style={{ backgroundColor: "rgba(10,132,255,0.04)", border: "1px solid rgba(10,132,255,0.1)" }}>
                         <div className="flex items-center justify-between mb-1">
                           <p className="text-[13px] font-medium text-white">{item.opportunity}</p>
                           <span className={cn("text-[10px] px-1.5 py-0.5 rounded",
-                            item.priority === "high" ? "bg-red-500/15 text-red-400" :
-                            item.priority === "medium" ? "bg-amber-500/15 text-amber-400" :
-                            "bg-zinc-500/15 text-zinc-400"
-                          )}>{item.priority}</span>
+                            item.priority === "high" ? "text-[#ff453a]" :
+                            item.priority === "medium" ? "text-[#ffd60a]" :
+                            "text-[#ffffff50]"
+                          )} style={{
+                            backgroundColor: item.priority === "high" ? "rgba(255,69,58,0.15)" :
+                              item.priority === "medium" ? "rgba(255,214,10,0.15)" :
+                              "rgba(255,255,255,0.06)"
+                          }}>{item.priority}</span>
                         </div>
-                        <p className="text-[12px] text-[#71717A]">{item.rationale}</p>
+                        <p className="text-micro">{item.rationale}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <Button onClick={() => { setAnalysisOpen(false); runAnalysis("all"); }}
-                className="w-full bg-white/[0.06] border border-[rgba(255,255,255,0.06)] text-white hover:bg-white/[0.1]">
-                <RefreshCw className="w-3.5 h-3.5 mr-2" /> Regenerate Analysis
-              </Button>
+              <button
+                onClick={() => { setAnalysisOpen(false); runAnalysis(); }}
+                className="btn-ghost w-full h-10 text-[13px] font-medium flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Regenerate Analysis
+              </button>
             </div>
           </div>
         </div>

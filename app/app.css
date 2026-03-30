@@ -1,131 +1,156 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --color-background: #08090A;
-  --color-foreground: #ECECED;
-  --color-card: #111213;
-  --color-card-foreground: #ECECED;
-  --color-popover: #111213;
-  --color-popover-foreground: #ECECED;
-  --color-primary: #FFFFFF;
-  --color-primary-foreground: #08090A;
-  --color-secondary: #1A1B1E;
-  --color-secondary-foreground: #ECECED;
-  --color-muted: #1A1B1E;
-  --color-muted-foreground: #71717A;
-  --color-accent: #1A1B1E;
-  --color-accent-foreground: #ECECED;
-  --color-destructive: #EF4444;
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-input: rgba(255, 255, 255, 0.06);
-  --color-ring: #3B82F6;
-  --color-sidebar: #0D0E0F;
-  --color-sidebar-foreground: #71717A;
-  --color-sidebar-active: #FFFFFF;
-  /* Module accent colors */
-  --color-accent-command: #F97316;
-  --color-accent-calendar: #3B82F6;
-  --color-accent-studio: #8B5CF6;
-  --color-accent-analytics: #10B981;
-  --color-accent-brand: #EC4899;
-  --color-accent-business: #F59E0B;
-  /* Pillar colors (updated) */
-  --color-pillar-lifestyle: #F97316;
-  --color-pillar-dogdad: #EC4899;
-  --color-pillar-performance: #10B981;
-  --color-pillar-entrepreneur: #F59E0B;
-  --color-pillar-pilot: #3B82F6;
-  --radius-lg: 0.75rem;
-  --radius-md: 0.5rem;
-  --radius-sm: 0.25rem;
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --color-background: #080809;
+  --color-foreground: #ffffffcc;
+  --color-card: #111114;
+  --color-card-foreground: #ffffffcc;
+  --color-popover: #111114;
+  --color-popover-foreground: #ffffffcc;
+  --color-primary: #ffffff;
+  --color-primary-foreground: #080809;
+  --color-secondary: #1c1c1e;
+  --color-secondary-foreground: #ffffffcc;
+  --color-muted: #1c1c1e;
+  --color-muted-foreground: #ffffff50;
+  --color-accent: #1c1c1e;
+  --color-accent-foreground: #ffffffcc;
+  --color-destructive: #ff453a;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-input: rgba(255, 255, 255, 0.1);
+  --color-ring: #ffffff;
+  --color-sidebar: #0c0c0d;
+  --color-success: #30d158;
+  --color-warning: #ffd60a;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
 }
 
 html, body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: #080809;
+  color: #ffffffcc;
   color-scheme: dark;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  border-color: var(--color-border);
-}
+* { border-color: rgba(255, 255, 255, 0.07); }
 
-/* Hide scrollbars globally */
-::-webkit-scrollbar {
-  display: none;
-}
-* {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+::-webkit-scrollbar { display: none; }
+* { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Typography utilities */
 .text-title {
-  font-size: 28px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-size: 32px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #ffffff;
 }
 
 .text-section {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted-foreground);
+  color: #ffffff30;
 }
 
+.text-body { font-size: 14px; font-weight: 400; line-height: 1.65; color: #ffffffcc; }
+.text-micro { font-size: 11px; font-weight: 500; color: #ffffff50; }
+
 .text-stat {
-  font-size: 32px;
-  font-weight: 600;
+  font-size: 36px;
+  font-weight: 200;
   letter-spacing: -0.02em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  color: #ffffff;
 }
 
 .text-stat-sm {
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 200;
   letter-spacing: -0.02em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  color: #ffffff;
 }
 
-/* Transitions */
-* {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+.card {
+  background: #111114;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
+.card:hover { background: #161619; }
+.card-static { background: #111114; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #ffffffcc;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.08); }
+
+.btn-primary {
+  background: #ffffff;
+  color: #080809;
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.btn-primary:hover { background: #ffffffe6; }
+
+.input-field {
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #ffffffcc;
+  font-size: 14px;
+  padding: 8px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 200ms;
+}
+.input-field:focus { border-color: #ffffff; }
+.input-field::placeholder { color: #ffffff30; }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #ffffffcc;
+}
+
+.divider { border-top: 1px solid rgba(255, 255, 255, 0.06); }
 
 button, a, [role="button"] {
-  transition: all 150ms ease;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* TipTap editor */
-.tiptap {
-  outline: none;
-  min-height: 120px;
-}
-.tiptap p {
-  margin-bottom: 0.5em;
-}
+/* Slide-over */
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.slide-in { animation: slideIn 250ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.fade-in { animation: fadeIn 200ms ease forwards; }
 
-/* Slide-over panel animation */
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@keyframes slideOutRight {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(100%); opacity: 0; }
-}
-.slide-in-right {
-  animation: slideInRight 200ms ease forwards;
-}
-.slide-out-right {
-  animation: slideOutRight 200ms ease forwards;
-}
+/* TipTap */
+.tiptap { outline: none; min-height: 160px; }
+.tiptap p { margin-bottom: 0.5em; }
