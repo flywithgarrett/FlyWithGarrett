@@ -3,33 +3,40 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --color-background: #0A0F1E;
-  --color-foreground: #E2E8F0;
-  --color-card: #111827;
-  --color-card-foreground: #E2E8F0;
-  --color-popover: #111827;
-  --color-popover-foreground: #E2E8F0;
-  --color-primary: #3B82F6;
-  --color-primary-foreground: #FFFFFF;
-  --color-secondary: #1E293B;
-  --color-secondary-foreground: #E2E8F0;
-  --color-muted: #1E293B;
-  --color-muted-foreground: #94A3B8;
-  --color-accent: #1E293B;
-  --color-accent-foreground: #E2E8F0;
+  --color-background: #08090A;
+  --color-foreground: #ECECED;
+  --color-card: #111213;
+  --color-card-foreground: #ECECED;
+  --color-popover: #111213;
+  --color-popover-foreground: #ECECED;
+  --color-primary: #FFFFFF;
+  --color-primary-foreground: #08090A;
+  --color-secondary: #1A1B1E;
+  --color-secondary-foreground: #ECECED;
+  --color-muted: #1A1B1E;
+  --color-muted-foreground: #71717A;
+  --color-accent: #1A1B1E;
+  --color-accent-foreground: #ECECED;
   --color-destructive: #EF4444;
-  --color-border: #1E293B;
-  --color-input: #1E293B;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-input: rgba(255, 255, 255, 0.06);
   --color-ring: #3B82F6;
-  --color-sidebar: #0D1321;
-  --color-sidebar-foreground: #94A3B8;
-  --color-sidebar-active: #3B82F6;
-  --color-aviation: #3B82F6;
-  --color-lifestyle: #8B5CF6;
-  --color-wellness: #10B981;
-  --color-travel: #F59E0B;
-  --color-founder: #F97316;
-  --color-comedy: #EC4899;
+  --color-sidebar: #0D0E0F;
+  --color-sidebar-foreground: #71717A;
+  --color-sidebar-active: #FFFFFF;
+  /* Module accent colors */
+  --color-accent-command: #F97316;
+  --color-accent-calendar: #3B82F6;
+  --color-accent-studio: #8B5CF6;
+  --color-accent-analytics: #10B981;
+  --color-accent-brand: #EC4899;
+  --color-accent-business: #F59E0B;
+  /* Pillar colors (updated) */
+  --color-pillar-lifestyle: #F97316;
+  --color-pillar-dogdad: #EC4899;
+  --color-pillar-performance: #10B981;
+  --color-pillar-entrepreneur: #F59E0B;
+  --color-pillar-pilot: #3B82F6;
   --radius-lg: 0.75rem;
   --radius-md: 0.5rem;
   --radius-sm: 0.25rem;
@@ -39,26 +46,63 @@ html, body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   color-scheme: dark;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
   border-color: var(--color-border);
 }
 
-/* Scrollbar styling */
+/* Hide scrollbars globally */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
+
+/* Typography utilities */
+.text-title {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+
+.text-section {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+.text-stat {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.text-stat-sm {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Transitions */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button, a, [role="button"] {
+  transition: all 150ms ease;
 }
 
 /* TipTap editor */
@@ -68,4 +112,20 @@ html, body {
 }
 .tiptap p {
   margin-bottom: 0.5em;
+}
+
+/* Slide-over panel animation */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+.slide-in-right {
+  animation: slideInRight 200ms ease forwards;
+}
+.slide-out-right {
+  animation: slideOutRight 200ms ease forwards;
 }

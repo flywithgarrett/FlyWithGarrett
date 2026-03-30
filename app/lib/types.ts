@@ -1,5 +1,5 @@
-export type Pillar = "aviation" | "lifestyle" | "wellness" | "travel" | "founder" | "comedy";
-export type Platform = "instagram" | "tiktok" | "youtube" | "threads" | "x";
+export type Pillar = "lifestyle" | "dogdad" | "performance" | "entrepreneur" | "pilot";
+export type Platform = "instagram" | "tiktok" | "youtube";
 export type ContentStatus = "idea" | "drafted" | "filmed" | "posted";
 export type FeatureStatus = "backlog" | "in_dev" | "shipped";
 export type CollabStatus = "potential" | "outreach" | "negotiating" | "confirmed" | "completed";
@@ -126,4 +126,74 @@ export interface IncomeEntry {
   brandDeals: number;
   expenses: number;
   createdAt: string;
+}
+
+// OAuth tokens
+export interface OAuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+  scope?: string;
+}
+
+// Platform analytics types
+export interface PlatformStats {
+  platform: Platform;
+  followers: number;
+  following?: number;
+  totalViews?: number;
+  totalLikes?: number;
+  videoCount?: number;
+  mediaCount?: number;
+  growth30d?: number;
+  engagementRate?: number;
+  lastSynced: string;
+}
+
+export interface TopPost {
+  id: string;
+  platform: Platform;
+  title: string;
+  thumbnailUrl?: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares?: number;
+  saves?: number;
+  reach?: number;
+  engagementRate?: number;
+  watchTime?: number;
+  completionRate?: number;
+  avgViewDuration?: number;
+  ctr?: number;
+  publishedAt: string;
+}
+
+export interface AudienceDemographics {
+  platform: Platform;
+  ageGender?: { age: string; male: number; female: number }[];
+  topCities?: { city: string; count: number }[];
+  topCountries?: { country: string; count: number }[];
+}
+
+export interface DailyMetric {
+  date: string;
+  followers?: number;
+  views?: number;
+  reach?: number;
+  engagement?: number;
+}
+
+// AI Analysis types
+export interface AnalysisResult {
+  id: string;
+  platform: Platform | "all";
+  createdAt: string;
+  overallScore: number;
+  scoreSummary: string;
+  weeklyFocus: string;
+  whatsWorking: { insight: string; evidence: string; action: string }[];
+  whatsNotWorking: { insight: string; evidence: string; action: string }[];
+  contentGaps: { pillar: string; gap: string; suggestion: string }[];
+  topOpportunities: { opportunity: string; rationale: string; priority: "high" | "medium" | "low" }[];
 }

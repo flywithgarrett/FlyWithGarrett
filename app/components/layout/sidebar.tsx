@@ -1,25 +1,18 @@
 import { NavLink } from "react-router";
 import {
-  LayoutDashboard,
-  Calendar,
-  PenTool,
-  BarChart3,
-  Shield,
-  Briefcase,
-  Plane,
-  Menu,
-  X,
+  LayoutDashboard, Calendar, PenTool, BarChart3, Shield, Briefcase,
+  Plane, Menu, X,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "~/lib/utils";
 
 const navItems = [
-  { to: "/dashboard", label: "Command Center", icon: LayoutDashboard },
-  { to: "/calendar", label: "Content Calendar", icon: Calendar },
-  { to: "/studio", label: "Content Studio", icon: PenTool },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/brand", label: "Brand Vault", icon: Shield },
-  { to: "/business", label: "Business Hub", icon: Briefcase },
+  { to: "/dashboard", label: "Command Center", icon: LayoutDashboard, accent: "#F97316" },
+  { to: "/calendar", label: "Content Calendar", icon: Calendar, accent: "#3B82F6" },
+  { to: "/studio", label: "Content Studio", icon: PenTool, accent: "#8B5CF6" },
+  { to: "/analytics", label: "Analytics", icon: BarChart3, accent: "#10B981" },
+  { to: "/brand", label: "Brand Vault", icon: Shield, accent: "#EC4899" },
+  { to: "/business", label: "Business Hub", icon: Briefcase, accent: "#F59E0B" },
 ];
 
 export function Sidebar() {
@@ -27,45 +20,41 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-card border border-border"
+        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-[#111213] border border-[rgba(255,255,255,0.06)]"
       >
         {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
-      {/* Overlay */}
       {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/60 z-30 lg:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 bottom-0 z-40 w-64 bg-sidebar border-r border-border flex flex-col transition-transform duration-200",
+          "fixed left-0 top-0 bottom-0 z-40 w-[220px] flex flex-col transition-transform duration-200",
+          "bg-gradient-to-b from-[#0D0E0F] to-[#0A0B0C] border-r border-[rgba(255,255,255,0.06)]",
           "lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Plane className="w-5 h-5 text-white" />
+        <div className="px-5 pt-6 pb-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+              <Plane className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-foreground">FlyWithGarrett</h1>
-              <p className="text-xs text-muted-foreground">Creator OS</p>
+              <h1 className="text-[13px] font-semibold text-white tracking-tight">FlyWithGarrett</h1>
+              <p className="text-[11px] text-[#71717A] leading-tight">Creator OS</p>
             </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 px-3 space-y-0.5">
+          <p className="text-section px-2.5 pb-2 pt-1">Navigation</p>
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -73,28 +62,38 @@ export function Sidebar() {
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 relative",
                   isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-sidebar-foreground hover:bg-accent hover:text-foreground"
+                    ? "text-white bg-white/[0.06]"
+                    : "text-[#71717A] hover:text-[#A1A1AA] hover:bg-white/[0.03]"
                 )
               }
             >
-              <item.icon className="w-5 h-5 shrink-0" />
-              <span>{item.label}</span>
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <div
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full"
+                      style={{ backgroundColor: item.accent }}
+                    />
+                  )}
+                  <item.icon className="w-4 h-4 shrink-0" />
+                  <span>{item.label}</span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-xs font-bold text-white">
+        <div className="px-5 py-4 border-t border-[rgba(255,255,255,0.06)]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-[11px] font-bold text-white">
               G
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">Garrett Ray</p>
-              <p className="text-xs text-muted-foreground truncate">@flywithgarrett</p>
+              <p className="text-[13px] font-medium text-white truncate">Garrett Ray</p>
+              <p className="text-[11px] text-[#71717A] truncate">@flywithgarrett</p>
             </div>
           </div>
         </div>

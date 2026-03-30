@@ -18,85 +18,86 @@ export async function seedIfEmpty() {
 
 async function seedHooks() {
   const hooks: HookTemplate[] = [
-    // Aviation - Truth Bomb
-    { id: generateId(), title: "Pilot Pay Reality", templateText: "Most people think pilots make $300K starting. Here's what my first year paycheck actually looked like…", contentType: "truth_bomb", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Seniority System", templateText: "In aviation, a 25-year-old can outrank a 55-year-old. Here's how seniority actually works…", contentType: "truth_bomb", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Reserve Life", templateText: "Imagine being on-call 24/7 and having to be at the airport in 2 hours. That's reserve life as a pilot.", contentType: "truth_bomb", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Commuter Pilot", templateText: "I live in NYC but I'm based in Dallas. Here's what commuting as a pilot actually looks like…", contentType: "truth_bomb", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Pilot Schedule", templateText: "People think pilots work 9-5. I haven't had a 'normal' week in 3 years. Here's my actual schedule…", contentType: "truth_bomb", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Training Costs", templateText: "It cost me over $100K to become a pilot. Nobody talks about the financial reality of flight training.", contentType: "truth_bomb", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Upgrade Timeline", templateText: "How long does it actually take to become a Captain at a major airline? The answer might surprise you.", contentType: "truth_bomb", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Hotel Life", templateText: "I've slept in over 200 different hotel rooms this year. Here's the reality of overnight trips.", contentType: "truth_bomb", pillar: "aviation", createdAt: new Date().toISOString() },
-    // Aviation - Access
-    { id: generateId(), title: "Cockpit Sunrise", templateText: "POV: You're watching the sunrise from 38,000 feet in the cockpit of a 737.", contentType: "access", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Pre-flight Walk", templateText: "Walk with me through the pre-flight inspection of an American Airlines 737.", contentType: "access", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Cockpit Tour", templateText: "Everything you see in a 737 cockpit and what each button does — pilot explains.", contentType: "access", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Layover Reveal", templateText: "24 hours in [city] on a pilot layover. Here's what we actually do…", contentType: "access", pillar: "aviation", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Night Landing", templateText: "POV: Landing at LAX at night from the cockpit. This never gets old.", contentType: "access", pillar: "aviation", createdAt: new Date().toISOString() },
-    // Lifestyle
-    { id: generateId(), title: "NYC Pilot Life", templateText: "What it's like being a pilot who lives in New York City. The best of both worlds.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Bella & Me", templateText: "Leaving Bella for a 4-day trip never gets easier. Being a pilot with a dog hits different.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "NYC Apartment", templateText: "My NYC apartment tour — how a pilot lives in the city that never sleeps.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Turning 30", templateText: "Turning 30 as a pilot, founder, and creator in NYC. Here's what I've learned.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Day Off NYC", templateText: "Day off in NYC as a pilot — coffee, gym, Bella, and the best city in the world.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Pilot Routine", templateText: "5AM pilot morning routine before a 4-day trip. NYC edition.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Date Night Flying", templateText: "Planning date night when you might get called to fly to Miami in 2 hours. Pilot relationship reality.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "NYC Hidden Gems", templateText: "Pilots know the best hidden spots in every city. Here are my NYC favorites.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
-    // Wellness / Atlas
-    { id: generateId(), title: "Pilot Hydration", templateText: "Flying dehydrates you 3x faster than normal. That's why I built Atlas Hydration.", contentType: "founder", pillar: "wellness", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Atlas Origin", templateText: "I built a hydration brand at 28 while flying full-time. Here's the Atlas Hydration story.", contentType: "founder", pillar: "wellness", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Clean Ingredients", templateText: "Most electrolyte drinks are loaded with sugar and artificial junk. Atlas is different. Here's why.", contentType: "education", pillar: "wellness", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Cockpit Hydration", templateText: "What I drink in the cockpit during a 12-hour flight day. Atlas Hydration keeps me sharp.", contentType: "product", pillar: "wellness", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Gym Routine", templateText: "Staying fit as a pilot is harder than you think. Here's my layover gym routine.", contentType: "lifestyle", pillar: "wellness", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Water Mission", templateText: "Every Atlas purchase helps provide clean water. Here's why that mission matters to me.", contentType: "mission", pillar: "wellness", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Travel Nutrition", templateText: "How I eat healthy while flying 15+ days a month. Pilot nutrition tips.", contentType: "education", pillar: "wellness", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Flavor Drop", templateText: "NEW FLAVOR DROP 🚨 Atlas Hydration [Flavor] is here. Zero sugar, full electrolytes, clean water mission.", contentType: "product", pillar: "wellness", createdAt: new Date().toISOString() },
-    // Travel
-    { id: generateId(), title: "Layover Guide", templateText: "8-hour layover in [city]? Here's exactly what you should do — from a pilot who's been 50+ times.", contentType: "guide", pillar: "travel", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Best Layover Cities", templateText: "Ranking the best layover cities in America. #1 might surprise you.", contentType: "ranking", pillar: "travel", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Airport Secrets", templateText: "Airport secrets pilots know that passengers don't. Thread 🧵", contentType: "education", pillar: "travel", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Pilot Travel Hacks", templateText: "Travel hacks only pilots know. After 1000+ flights, here's what I've learned.", contentType: "education", pillar: "travel", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Hotel Room Tour", templateText: "Pilot hotel room vs. what you'd expect. Layover hotel room tour in [city].", contentType: "access", pillar: "travel", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Best Airport Food", templateText: "Best food at [airport]. A pilot's definitive ranking after eating here 100+ times.", contentType: "ranking", pillar: "travel", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Non-Rev Travel", templateText: "Flying for free as a pilot sounds amazing until you're stuck in the airport for 8 hours. Non-rev reality.", contentType: "truth_bomb", pillar: "travel", createdAt: new Date().toISOString() },
-    // Founder
-    { id: generateId(), title: "Building in Public", templateText: "Month [X] of building Atlas Hydration while flying full-time. Here's what happened.", contentType: "update", pillar: "founder", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "SkyWay Preview", templateText: "I'm building an app that will change how pilots plan their lives. First look at SkyWay.", contentType: "launch", pillar: "founder", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Founder Pilot", templateText: "Running a company from 35,000 feet. What it's really like being a founder and pilot.", contentType: "story", pillar: "founder", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Revenue Milestone", templateText: "Atlas Hydration just hit [milestone]. From idea to reality — here's the journey.", contentType: "milestone", pillar: "founder", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Side Hustle Reality", templateText: "3 businesses, 1 airline job, 0 days off. The real side hustle culture nobody shows you.", contentType: "truth_bomb", pillar: "founder", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Why I Build", templateText: "I could just fly planes and make great money. Here's why I also build companies.", contentType: "story", pillar: "founder", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Lessons Learned", templateText: "5 things I wish I knew before starting a business as a full-time pilot.", contentType: "education", pillar: "founder", createdAt: new Date().toISOString() },
-    // Comedy
-    { id: generateId(), title: "Passenger Types", templateText: "Types of passengers every pilot secretly knows about. Which one are you?", contentType: "comedy", pillar: "comedy", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Pilot Myths", templateText: "Things people think pilots do vs. what we actually do. The accuracy is painful.", contentType: "comedy", pillar: "comedy", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Family Questions", templateText: "'So do you just push buttons?' — questions every pilot gets at family dinners.", contentType: "comedy", pillar: "comedy", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Dating a Pilot", templateText: "What people think dating a pilot is like vs. the reality. Sorry in advance.", contentType: "comedy", pillar: "comedy", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Turbulence Panic", templateText: "Passengers during light turbulence vs. pilots during light turbulence. The difference is hilarious.", contentType: "comedy", pillar: "comedy", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Crew Meals", templateText: "What pilots eat on the plane might shock you. Crew meal reveal!", contentType: "comedy", pillar: "comedy", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "PA Announcements", templateText: "What the pilot PA announcement says vs. what it actually means. A translator.", contentType: "comedy", pillar: "comedy", createdAt: new Date().toISOString() },
-    { id: generateId(), title: "Autopilot Jokes", templateText: "'So the plane flies itself?' If I had a dollar for every time someone said this…", contentType: "comedy", pillar: "comedy", createdAt: new Date().toISOString() },
+    // Lifestyle & Finance
+    { id: generateId(), title: "Credit Card Points", templateText: "3 ways I maximize credit card points while living in NYC", contentType: "education", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "NYC Money Tips", templateText: "How I afford living in NYC on a pilot's schedule — the money systems nobody talks about", contentType: "education", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Investing at 30", templateText: "I started investing seriously at 28. Here's what my portfolio looks like 2 years later.", contentType: "truth_bomb", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "NYC Apartment Tour", templateText: "My NYC apartment tour — how a pilot lives in the city that never sleeps.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Day Off NYC", templateText: "Day off in NYC — coffee, gym, Bella, and the best city in the world.", contentType: "lifestyle", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Morning Routine NYC", templateText: "5AM morning routine in NYC. How I optimize my day for performance & focus.", contentType: "routine", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Homeownership Tips", templateText: "What I wish I knew before buying property in my late 20s. NYC real estate reality.", contentType: "education", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "NYC Hidden Gems", templateText: "NYC spots most people don't know about. Saving this for later.", contentType: "guide", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Finance Tips Pilot", templateText: "How I build wealth with an irregular pilot schedule. The systems that work.", contentType: "education", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Turning 30 NYC", templateText: "Turning 30 as a pilot, founder, and creator in NYC. Here's what I've learned.", contentType: "story", pillar: "lifestyle", createdAt: new Date().toISOString() },
+    // Dog Dad
+    { id: generateId(), title: "Bella NYC Day", templateText: "Day in the life with Bella — NYC edition", contentType: "vlog", pillar: "dogdad", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Dog Dad Diaries", templateText: "Dog Dad Diaries: taking Bella to her favorite NYC park. She runs this city.", contentType: "series", pillar: "dogdad", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Bella Weimaraner", templateText: "What nobody tells you about owning a Weimaraner in NYC", contentType: "education", pillar: "dogdad", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Leaving Bella", templateText: "Leaving Bella for a 4-day trip never gets easier. Being a pilot with a dog hits different.", contentType: "emotional", pillar: "dogdad", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Dog Dad NYC", templateText: "NYC dog dad life — the parks, the walks, the chaos. Bella approved guide.", contentType: "guide", pillar: "dogdad", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Bella Routine", templateText: "Bella's morning routine is better than mine. NYC dog dad content.", contentType: "comedy", pillar: "dogdad", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Dog Friendly NYC", templateText: "The most dog-friendly spots in NYC. Bella tested, Garrett approved.", contentType: "guide", pillar: "dogdad", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "FaceTime Bella", templateText: "FaceTiming my dog from 35,000 feet. Yes, I'm that dog dad.", contentType: "comedy", pillar: "dogdad", createdAt: new Date().toISOString() },
+    // Peak Performance
+    { id: generateId(), title: "Optimize Day", templateText: "How I optimize my day for performance & focus", contentType: "routine", pillar: "performance", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Supplement Stack", templateText: "Supplements, training, and treatments that fuel my life", contentType: "education", pillar: "performance", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Hangover Hack", templateText: "How I recover from a night out — hangover hack", contentType: "hack", pillar: "performance", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Gym Routine", templateText: "Full gym routine — how I stay fit while flying 15 days a month", contentType: "routine", pillar: "performance", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Paddle NYC", templateText: "Paddle is the new NYC workout. Here's why I'm addicted.", contentType: "lifestyle", pillar: "performance", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Recovery Routine", templateText: "My recovery routine: cold plunge, sauna, stretching. The non-negotiables.", contentType: "routine", pillar: "performance", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Atlas Gym", templateText: "Pre-workout hydration hits different with Atlas. Gym day vlog.", contentType: "product", pillar: "performance", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Pilot Fitness", templateText: "Staying fit with an unpredictable schedule. The pilot fitness playbook.", contentType: "education", pillar: "performance", createdAt: new Date().toISOString() },
+    // Entrepreneur / Atlas
+    { id: generateId(), title: "Atlas BTS", templateText: "A day in the life building a CPG brand in NYC", contentType: "vlog", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Atlas Mistake", templateText: "Here's 1 mistake I'm learning from while building Atlas", contentType: "truth_bomb", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Building Atlas Monthly", templateText: "Month [X] of building Atlas Hydration while flying full-time. Here's what happened.", contentType: "update", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "CPG Business", templateText: "What nobody tells you about starting a CPG brand. The real costs.", contentType: "education", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Atlas Clean Water", templateText: "Every Atlas purchase helps provide clean water. Here's why that mission matters.", contentType: "mission", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Founder Schedule", templateText: "Running a company from 35,000 feet. What it's really like being a founder and pilot.", contentType: "story", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Atlas Revenue", templateText: "Atlas just hit [milestone]. From idea to reality — here's the journey.", contentType: "milestone", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Product Dev", templateText: "Creating a new Atlas flavor from scratch. 6 months in 60 seconds.", contentType: "bts", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Side Hustle Real", templateText: "3 businesses, 1 airline job, 0 days off. The real side hustle culture nobody shows.", contentType: "truth_bomb", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Why I Build", templateText: "I could just fly planes and make great money. Here's why I also build companies.", contentType: "story", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Clean Ingredients", templateText: "Most electrolyte drinks are loaded with sugar. Atlas is different. Here's why.", contentType: "education", pillar: "entrepreneur", createdAt: new Date().toISOString() },
+    // Pilot Life (subtle)
+    { id: generateId(), title: "Pilot Subtle", templateText: "POV: watching the sunrise from 38,000 feet. Some offices are better than others.", contentType: "access", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Layover City", templateText: "24 hours in [city]. How I spend layovers.", contentType: "vlog", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Pilot Pay", templateText: "Most people think pilots make $300K starting. Here's what year one actually looked like.", contentType: "truth_bomb", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Seniority", templateText: "In aviation, a 25-year-old can outrank a 55-year-old. Seniority explained.", contentType: "education", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Night Landing", templateText: "This view never gets old. Night landing POV.", contentType: "access", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Travel Hacks", templateText: "Travel hacks after 1000+ flights. Things only pilots know.", contentType: "education", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Hotel Life", templateText: "200+ hotel rooms this year. The reality of overnight trips.", contentType: "truth_bomb", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Best Layover Cities", templateText: "Ranking the best layover cities in America. #1 might surprise you.", contentType: "ranking", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Pilot Myths", templateText: "Things people think pilots do vs. what we actually do.", contentType: "comedy", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Family Questions", templateText: "'So do you just push buttons?' — questions every pilot gets at family dinners.", contentType: "comedy", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Turbulence Panic", templateText: "Passengers during light turbulence vs. pilots. The difference is hilarious.", contentType: "comedy", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Autopilot Jokes", templateText: "'So the plane flies itself?' If I had a dollar for every time...", contentType: "comedy", pillar: "pilot", createdAt: new Date().toISOString() },
+    { id: generateId(), title: "Airport Food Ranking", templateText: "Best food at [airport]. A pilot's ranking after 100+ times.", contentType: "ranking", pillar: "pilot", createdAt: new Date().toISOString() },
   ];
   await kvSet("hooks:library", hooks);
 }
 
 async function seedSeries() {
   const series: ContentSeries[] = [
-    { id: generateId(), name: "Pilot Truths", pillar: "aviation", episodeCount: 0, description: "Numbered series exposing real truths about the airline pilot career — pay, lifestyle, seniority, and everything in between.", createdAt: new Date().toISOString() },
-    { id: generateId(), name: "Layover in [City]", pillar: "travel", episodeCount: 0, description: "City-by-city layover guides from a pilot who's been everywhere. Food, spots, and hidden gems.", createdAt: new Date().toISOString() },
-    { id: generateId(), name: "Building Atlas", pillar: "founder", episodeCount: 0, description: "Monthly founder update documenting the journey of building Atlas Hydration from the cockpit.", createdAt: new Date().toISOString() },
-    { id: generateId(), name: "Life at 30", pillar: "lifestyle", episodeCount: 0, description: "Reflections, lessons, and adventures from turning 30 as a pilot, founder, and creator in NYC.", createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Dog Dad Diaries: NYC Edition", pillar: "dogdad", episodeCount: 0, description: "Bella adventures across NYC — parks, restaurants, walks, and the chaos of being a dog dad in the city.", createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Optimize Life", pillar: "performance", episodeCount: 0, description: "Gym, supplements, paddle, recovery — how Garrett optimizes every aspect of performance and wellness.", createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Atlas BTS", pillar: "entrepreneur", episodeCount: 0, description: "Behind-the-scenes of building Atlas Hydration — product dev, meetings, warehouse visits, investor calls.", createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Lifestyle Finance", pillar: "lifestyle", episodeCount: 0, description: "Credit cards, investing, NYC money tips, homeownership — practical finance content for young professionals.", createdAt: new Date().toISOString() },
+    { id: generateId(), name: "In The Moment", pillar: "lifestyle", episodeCount: 0, description: "Raw, unfiltered vlogs capturing authentic moments in Garrett's life — travel, NYC, friends, Bella.", createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Pilot Truths", pillar: "pilot", episodeCount: 0, description: "Numbered series exposing real truths about the airline pilot career — pay, lifestyle, seniority.", createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Layover In", pillar: "pilot", episodeCount: 0, description: "City-by-city layover guides from a pilot who's been everywhere.", createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Building Atlas", pillar: "entrepreneur", episodeCount: 0, description: "Monthly founder update documenting the Atlas Hydration journey.", createdAt: new Date().toISOString() },
   ];
   await kvSet("content:series", series);
 }
 
 async function seedHashtags() {
   const hashtagSets: HashtagSet[] = [
-    { id: generateId(), name: "Aviation Core", pillar: "aviation", platform: "all", hashtags: ["#pilot", "#aviation", "#pilotlife", "#airline", "#americanairlines", "#737", "#cockpit", "#avgeek", "#flyguy", "#flywithgarrett"], createdAt: new Date().toISOString() },
-    { id: generateId(), name: "NYC Lifestyle", pillar: "lifestyle", platform: "all", hashtags: ["#nyc", "#newyork", "#nyclife", "#manhattan", "#nyclifestyle", "#citylife", "#newyorkcity", "#nycliving", "#flywithgarrett"], createdAt: new Date().toISOString() },
-    { id: generateId(), name: "Wellness & Atlas", pillar: "wellness", platform: "all", hashtags: ["#hydration", "#atlashydration", "#electrolytes", "#wellness", "#health", "#cleanwater", "#zerosugar", "#fitness", "#flywithgarrett"], createdAt: new Date().toISOString() },
-    { id: generateId(), name: "Travel", pillar: "travel", platform: "all", hashtags: ["#travel", "#layover", "#explore", "#travelgram", "#wanderlust", "#airport", "#pilottravel", "#travellife", "#flywithgarrett"], createdAt: new Date().toISOString() },
-    { id: generateId(), name: "Founder Journey", pillar: "founder", platform: "all", hashtags: ["#founder", "#entrepreneur", "#startup", "#buildinpublic", "#sidehustle", "#ceo", "#business", "#grind", "#flywithgarrett"], createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Lifestyle & NYC", pillar: "lifestyle", platform: "all", hashtags: ["#nyc", "#nyclife", "#nyclifestyle", "#creditcardpoints", "#investing", "#personalfinance", "#manhattan", "#flywithgarrett"], createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Dog Dad", pillar: "dogdad", platform: "all", hashtags: ["#dogdad", "#weimaraner", "#dogsofnyc", "#nycdogs", "#dogdadlife", "#bella", "#dogdaddiaries", "#flywithgarrett"], createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Peak Performance", pillar: "performance", platform: "all", hashtags: ["#fitness", "#supplements", "#recovery", "#gymlife", "#paddle", "#optimizelife", "#wellness", "#flywithgarrett"], createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Atlas & Entrepreneur", pillar: "entrepreneur", platform: "all", hashtags: ["#atlashydration", "#electrolytes", "#founder", "#entrepreneur", "#cpg", "#buildinpublic", "#startup", "#flywithgarrett"], createdAt: new Date().toISOString() },
+    { id: generateId(), name: "Pilot & Travel", pillar: "pilot", platform: "all", hashtags: ["#pilot", "#aviation", "#pilotlife", "#787", "#layover", "#travel", "#cockpitview", "#flywithgarrett"], createdAt: new Date().toISOString() },
   ];
   await kvSet("hashtags:sets", hashtagSets);
 }
@@ -105,15 +106,13 @@ async function seedBrand() {
   const brand: BrandConfig = {
     handle: "@flywithgarrett",
     tagline: "Living at altitude.",
-    tone: ["Confident", "Aspirational", "Grounded", "Funny", "Self-aware"],
+    tone: ["Authentic", "Aspirational", "Approachable"],
     audiences: ["Aviation Dreamers", "Lifestyle Followers", "Founder Curious"],
     contentWorlds: ["The Flight Deck", "The Life", "The Build"],
     platformBios: {
-      instagram: "✈️ American Airlines Pilot | 🧊 @atlashydration founder | 📱 Building @skyway.app | NYC 🗽 | Living at altitude.",
-      tiktok: "AA Pilot ✈️ | Atlas Hydration founder 🧊 | NYC 🗽 | The pilot internet chose.",
-      youtube: "American Airlines pilot sharing the real aviation life. Founder of Atlas Hydration. NYC based. New videos every Saturday.",
-      threads: "Pilot thoughts at altitude. @flywithgarrett everywhere else.",
-      x: "AA 737 pilot. Building @atlashydration & @skywayapp. NYC. Thoughts from 38,000ft.",
+      instagram: "787 Pilot | Atlas Hydration founder | NYC + Bella | Living at altitude.",
+      youtube: "Building Atlas Hydration while flying 787s. Entrepreneur content, BTS, and real talk. NYC based.",
+      tiktok: "Atlas Hydration founder | 787 Pilot | NYC | Quick business tips & real talk.",
     },
     captionTemplates: [],
   };
@@ -125,8 +124,6 @@ async function seedFollowers() {
     { id: generateId(), platform: "instagram", followers: 806000, views: 0, reach: 0, engagementRate: 0, topPostTitle: "", recordedAt: new Date().toISOString() },
     { id: generateId(), platform: "tiktok", followers: 542000, views: 0, reach: 0, engagementRate: 0, topPostTitle: "", recordedAt: new Date().toISOString() },
     { id: generateId(), platform: "youtube", followers: 182000, views: 0, reach: 0, engagementRate: 0, topPostTitle: "", recordedAt: new Date().toISOString() },
-    { id: generateId(), platform: "threads", followers: 149000, views: 0, reach: 0, engagementRate: 0, topPostTitle: "", recordedAt: new Date().toISOString() },
-    { id: generateId(), platform: "x", followers: 1900, views: 0, reach: 0, engagementRate: 0, topPostTitle: "", recordedAt: new Date().toISOString() },
   ];
   await kvSet("analytics:snapshots", snapshots);
 }

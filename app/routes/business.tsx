@@ -93,6 +93,12 @@ const featureStatusConfig: Record<FeatureStatus, { label: string; color: string 
   shipped: { label: "Shipped", color: "bg-emerald-500/20 text-emerald-400" },
 };
 
+const tooltipStyle = {
+  backgroundColor: "#111213",
+  border: "1px solid rgba(255,255,255,0.06)",
+  borderRadius: "8px",
+};
+
 export default function BusinessPage() {
   const { atlasMetrics, atlasProducts, skywayFeatures, income } = useLoaderData<typeof loader>();
 
@@ -119,12 +125,12 @@ export default function BusinessPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Business Hub</h1>
-        <p className="text-sm text-muted-foreground mt-1">Atlas Hydration, SkyWay & finances</p>
+        <h1 className="text-title text-white">Business Hub</h1>
+        <p className="text-sm text-[#71717A] mt-1">Atlas Hydration, SkyWay & finances</p>
       </div>
 
       <Tabs defaultValue="atlas">
-        <TabsList className="flex-wrap">
+        <TabsList className="flex-wrap bg-white/[0.06] border border-[rgba(255,255,255,0.06)]">
           <TabsTrigger value="atlas" className="gap-1.5"><Droplets className="w-3.5 h-3.5" /> Atlas</TabsTrigger>
           <TabsTrigger value="skyway" className="gap-1.5"><Smartphone className="w-3.5 h-3.5" /> SkyWay</TabsTrigger>
           <TabsTrigger value="income" className="gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Income</TabsTrigger>
@@ -134,20 +140,20 @@ export default function BusinessPage() {
         <TabsContent value="atlas">
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             {/* Products */}
-            <Card>
+            <Card className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="text-base flex items-center gap-2 text-white">
                   <Package className="w-4 h-4 text-emerald-400" />
                   Product Catalog
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {atlasProducts.map((product) => (
-                  <div key={product.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                  <div key={product.id} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.04]">
                     <div className="w-4 h-4 rounded-full" style={{ backgroundColor: product.color }} />
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{product.name}</p>
-                      <p className="text-xs text-muted-foreground">{product.description}</p>
+                      <p className="text-sm font-medium text-white">{product.name}</p>
+                      <p className="text-xs text-[#71717A]">{product.description}</p>
                     </div>
                     <Badge variant="secondary" className={cn("text-xs", product.inStock ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400")}>
                       {product.inStock ? "In Stock" : "Out"}
@@ -158,24 +164,26 @@ export default function BusinessPage() {
             </Card>
 
             {/* Revenue Summary */}
-            <Card>
+            <Card className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">Revenue</CardTitle>
+                <CardTitle className="text-base text-white">Revenue</CardTitle>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button size="sm" variant="ghost" className="gap-1"><Plus className="w-3 h-3" /> Log</Button>
+                    <Button size="sm" className="gap-1 bg-white/[0.06] border border-[rgba(255,255,255,0.06)] text-white hover:bg-white/[0.1]">
+                      <Plus className="w-3 h-3" /> Log
+                    </Button>
                   </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader><DialogTitle>Log Atlas Revenue</DialogTitle></DialogHeader>
+                  <DialogContent className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
+                    <DialogHeader><DialogTitle className="text-white">Log Atlas Revenue</DialogTitle></DialogHeader>
                     <Form method="post" className="space-y-4">
                       <input type="hidden" name="intent" value="add-atlas-metric" />
-                      <Input name="recordedMonth" type="month" required />
-                      <Input name="revenue" type="number" placeholder="Revenue ($)" required />
-                      <Input name="unitsSold" type="number" placeholder="Units Sold" />
-                      <Input name="websiteVisits" type="number" placeholder="Website Visits" />
-                      <Input name="notes" placeholder="Notes" />
+                      <Input name="recordedMonth" type="month" required className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white" />
+                      <Input name="revenue" type="number" placeholder="Revenue ($)" required className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
+                      <Input name="unitsSold" type="number" placeholder="Units Sold" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
+                      <Input name="websiteVisits" type="number" placeholder="Website Visits" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
+                      <Input name="notes" placeholder="Notes" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
                       <DialogClose asChild>
-                        <Button type="submit" className="w-full">Save</Button>
+                        <Button type="submit" className="w-full bg-white text-[#08090A] hover:bg-white/90">Save</Button>
                       </DialogClose>
                     </Form>
                   </DialogContent>
@@ -183,14 +191,14 @@ export default function BusinessPage() {
               </CardHeader>
               <CardContent>
                 {sortedAtlas.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-6">No revenue data yet.</p>
+                  <p className="text-sm text-[#71717A] text-center py-6">No revenue data yet.</p>
                 ) : (
                   <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={sortedAtlas}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                      <XAxis dataKey="recordedMonth" stroke="#64748B" tick={{ fontSize: 11 }} />
-                      <YAxis stroke="#64748B" tick={{ fontSize: 11 }} />
-                      <Tooltip contentStyle={{ backgroundColor: "#111827", border: "1px solid #1E293B", borderRadius: "8px" }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                      <XAxis dataKey="recordedMonth" stroke="#71717A" tick={{ fontSize: 11, fill: "#71717A" }} />
+                      <YAxis stroke="#71717A" tick={{ fontSize: 11, fill: "#71717A" }} />
+                      <Tooltip contentStyle={tooltipStyle} />
                       <Bar dataKey="revenue" name="Revenue" fill="#10B981" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -205,22 +213,24 @@ export default function BusinessPage() {
           <div className="flex justify-end mb-4">
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="sm" className="gap-2"><Plus className="w-4 h-4" /> Add Feature</Button>
+                <Button size="sm" className="gap-2 bg-white text-[#08090A] hover:bg-white/90">
+                  <Plus className="w-4 h-4" /> Add Feature
+                </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>New SkyWay Feature</DialogTitle></DialogHeader>
+              <DialogContent className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
+                <DialogHeader><DialogTitle className="text-white">New SkyWay Feature</DialogTitle></DialogHeader>
                 <Form method="post" className="space-y-4">
                   <input type="hidden" name="intent" value="add-skyway-feature" />
-                  <Input name="title" placeholder="Feature title" required />
-                  <Textarea name="description" placeholder="Description" rows={2} />
-                  <Select name="status" defaultValue="backlog">
+                  <Input name="title" placeholder="Feature title" required className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
+                  <Textarea name="description" placeholder="Description" rows={2} className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
+                  <Select name="status" defaultValue="backlog" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white">
                     <option value="backlog">Backlog</option>
                     <option value="in_dev">In Development</option>
                     <option value="shipped">Shipped</option>
                   </Select>
-                  <Input name="priority" type="number" placeholder="Priority (1=highest)" defaultValue="5" />
+                  <Input name="priority" type="number" placeholder="Priority (1=highest)" defaultValue="5" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
                   <DialogClose asChild>
-                    <Button type="submit" className="w-full">Save</Button>
+                    <Button type="submit" className="w-full bg-white text-[#08090A] hover:bg-white/90">Save</Button>
                   </DialogClose>
                 </Form>
               </DialogContent>
@@ -235,20 +245,20 @@ export default function BusinessPage() {
                   <Badge className={cn("text-xs", featureStatusConfig[status].color)}>
                     {featureStatusConfig[status].label}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">({featuresByStatus[status].length})</span>
+                  <span className="text-xs text-[#71717A]">({featuresByStatus[status].length})</span>
                 </div>
-                <div className="space-y-2 min-h-[200px] p-2 rounded-lg bg-secondary/30">
+                <div className="space-y-2 min-h-[200px] p-2 rounded-lg bg-white/[0.03] border border-[rgba(255,255,255,0.06)]">
                   {featuresByStatus[status].length === 0 ? (
-                    <p className="text-xs text-muted-foreground text-center py-8">Empty</p>
+                    <p className="text-xs text-[#71717A] text-center py-8">Empty</p>
                   ) : (
                     featuresByStatus[status]
                       .sort((a, b) => a.priority - b.priority)
                       .map((feature) => (
-                        <Card key={feature.id} className="bg-card">
+                        <Card key={feature.id} className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
                           <CardContent className="p-3">
-                            <p className="text-sm font-medium">{feature.title}</p>
+                            <p className="text-sm font-medium text-white">{feature.title}</p>
                             {feature.description && (
-                              <p className="text-xs text-muted-foreground mt-1">{feature.description}</p>
+                              <p className="text-xs text-[#71717A] mt-1">{feature.description}</p>
                             )}
                             <div className="flex gap-1 mt-2">
                               {status !== "backlog" && (
@@ -256,7 +266,7 @@ export default function BusinessPage() {
                                   <input type="hidden" name="intent" value="update-feature-status" />
                                   <input type="hidden" name="id" value={feature.id} />
                                   <input type="hidden" name="status" value={status === "in_dev" ? "backlog" : "in_dev"} />
-                                  <Button variant="ghost" size="sm" className="h-6 text-xs px-2" type="submit">
+                                  <Button size="sm" className="h-6 text-xs px-2 bg-white/[0.06] border border-[rgba(255,255,255,0.06)] text-white hover:bg-white/[0.1]" type="submit">
                                     ← Back
                                   </Button>
                                 </Form>
@@ -266,7 +276,7 @@ export default function BusinessPage() {
                                   <input type="hidden" name="intent" value="update-feature-status" />
                                   <input type="hidden" name="id" value={feature.id} />
                                   <input type="hidden" name="status" value={status === "backlog" ? "in_dev" : "shipped"} />
-                                  <Button variant="ghost" size="sm" className="h-6 text-xs px-2" type="submit">
+                                  <Button size="sm" className="h-6 text-xs px-2 bg-white/[0.06] border border-[rgba(255,255,255,0.06)] text-white hover:bg-white/[0.1]" type="submit">
                                     Next →
                                   </Button>
                                 </Form>
@@ -287,20 +297,22 @@ export default function BusinessPage() {
           <div className="flex justify-end mb-4">
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="sm" className="gap-2"><Plus className="w-4 h-4" /> Log Income</Button>
+                <Button size="sm" className="gap-2 bg-white text-[#08090A] hover:bg-white/90">
+                  <Plus className="w-4 h-4" /> Log Income
+                </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Log Monthly Income</DialogTitle></DialogHeader>
+              <DialogContent className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
+                <DialogHeader><DialogTitle className="text-white">Log Monthly Income</DialogTitle></DialogHeader>
                 <Form method="post" className="space-y-4">
                   <input type="hidden" name="intent" value="add-income" />
-                  <Input name="month" type="month" required />
-                  <Input name="pilotIncome" type="number" placeholder="Pilot Income ($)" />
-                  <Input name="creatorIncome" type="number" placeholder="Creator Income ($)" />
-                  <Input name="atlasRevenue" type="number" placeholder="Atlas Revenue ($)" />
-                  <Input name="brandDeals" type="number" placeholder="Brand Deals ($)" />
-                  <Input name="expenses" type="number" placeholder="Total Expenses ($)" />
+                  <Input name="month" type="month" required className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white" />
+                  <Input name="pilotIncome" type="number" placeholder="Pilot Income ($)" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
+                  <Input name="creatorIncome" type="number" placeholder="Creator Income ($)" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
+                  <Input name="atlasRevenue" type="number" placeholder="Atlas Revenue ($)" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
+                  <Input name="brandDeals" type="number" placeholder="Brand Deals ($)" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
+                  <Input name="expenses" type="number" placeholder="Total Expenses ($)" className="bg-white/[0.06] border-[rgba(255,255,255,0.06)] text-white placeholder:text-[#71717A]" />
                   <DialogClose asChild>
-                    <Button type="submit" className="w-full">Save</Button>
+                    <Button type="submit" className="w-full bg-white text-[#08090A] hover:bg-white/90">Save</Button>
                   </DialogClose>
                 </Form>
               </DialogContent>
@@ -308,23 +320,25 @@ export default function BusinessPage() {
           </div>
 
           {income.length === 0 ? (
-            <Card><CardContent className="py-12 text-center">
-              <DollarSign className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-muted-foreground text-sm">No income data logged yet.</p>
-            </CardContent></Card>
+            <Card className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
+              <CardContent className="py-12 text-center">
+                <DollarSign className="w-8 h-8 text-[#71717A] mx-auto mb-2" />
+                <p className="text-[#71717A] text-sm">No income data logged yet.</p>
+              </CardContent>
+            </Card>
           ) : (
             <>
-              <Card className="mb-6">
+              <Card className="mb-6 bg-[#111213] border border-[rgba(255,255,255,0.06)]">
                 <CardHeader>
-                  <CardTitle className="text-base">Monthly P&L</CardTitle>
+                  <CardTitle className="text-base text-white">Monthly P&L</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={incomeData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                      <XAxis dataKey="month" stroke="#64748B" tick={{ fontSize: 11 }} />
-                      <YAxis stroke="#64748B" tick={{ fontSize: 11 }} />
-                      <Tooltip contentStyle={{ backgroundColor: "#111827", border: "1px solid #1E293B", borderRadius: "8px" }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                      <XAxis dataKey="month" stroke="#71717A" tick={{ fontSize: 11, fill: "#71717A" }} />
+                      <YAxis stroke="#71717A" tick={{ fontSize: 11, fill: "#71717A" }} />
+                      <Tooltip contentStyle={tooltipStyle} />
                       <Bar dataKey="pilot" name="Pilot" fill="#3B82F6" stackId="income" />
                       <Bar dataKey="creator" name="Creator" fill="#8B5CF6" stackId="income" />
                       <Bar dataKey="atlas" name="Atlas" fill="#10B981" stackId="income" />
@@ -337,20 +351,20 @@ export default function BusinessPage() {
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {incomeData.slice(-1).map((entry) => (
                   <>
-                    <Card key={`${entry.month}-total`}>
+                    <Card key={`${entry.month}-total`} className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
                       <CardContent className="p-4 text-center">
-                        <p className="text-xs text-muted-foreground">Total Revenue</p>
-                        <p className="text-xl font-bold text-emerald-400">{formatCurrency(entry.total)}</p>
-                        <p className="text-xs text-muted-foreground">{entry.month}</p>
+                        <p className="text-xs text-[#71717A]">Total Revenue</p>
+                        <p className="text-stat-sm text-emerald-400">{formatCurrency(entry.total)}</p>
+                        <p className="text-xs text-[#71717A]">{entry.month}</p>
                       </CardContent>
                     </Card>
-                    <Card key={`${entry.month}-net`}>
+                    <Card key={`${entry.month}-net`} className="bg-[#111213] border border-[rgba(255,255,255,0.06)]">
                       <CardContent className="p-4 text-center">
-                        <p className="text-xs text-muted-foreground">Net Income</p>
-                        <p className={cn("text-xl font-bold", entry.net >= 0 ? "text-emerald-400" : "text-red-400")}>
+                        <p className="text-xs text-[#71717A]">Net Income</p>
+                        <p className={cn("text-stat-sm", entry.net >= 0 ? "text-emerald-400" : "text-red-400")}>
                           {formatCurrency(entry.net)}
                         </p>
-                        <p className="text-xs text-muted-foreground">{entry.month}</p>
+                        <p className="text-xs text-[#71717A]">{entry.month}</p>
                       </CardContent>
                     </Card>
                   </>
