@@ -5,7 +5,7 @@ export function getInstagramAuthUrl(): string {
   const params = new URLSearchParams({
     client_id: process.env.INSTAGRAM_CLIENT_ID || "",
     redirect_uri: process.env.INSTAGRAM_REDIRECT_URI || "",
-    scope: "instagram_business_basic,instagram_business_manage_insights",
+    scope: "instagram_basic",
     response_type: "code",
   });
   return `https://www.facebook.com/v19.0/dialog/oauth?${params}`;
