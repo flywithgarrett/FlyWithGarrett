@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend,
+  Tooltip, ResponsiveContainer, Legend, Cell,
 } from "recharts";
 import { getAggregatedAnalytics } from "~/lib/analytics.server";
 import { generateAnalysis } from "~/lib/ai.server";
@@ -263,7 +263,7 @@ export default function AnalyticsPage() {
             <Tooltip contentStyle={chartTooltipStyle} />
             <Bar dataKey="count" name="Posts" radius={[4, 4, 0, 0]}>
               {pillarEngagement.map((e, i) => (
-                <rect key={i} fill={e.color} />
+                <Cell key={i} fill={e.color} />
               ))}
             </Bar>
           </BarChart>
