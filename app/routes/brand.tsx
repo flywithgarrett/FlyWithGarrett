@@ -57,7 +57,7 @@ const platformIcons: Record<string, React.ComponentType<{ className?: string }>>
 };
 
 const statusColors: Record<CollabStatus, { bg: string; text: string }> = {
-  potential: { bg: "rgba(255,255,255,0.08)", text: "rgba(235,235,245,0.3)" },
+  potential: { bg: "rgba(0,0,0,0.05)", text: "#86868b" },
   outreach: { bg: "rgba(10,132,255,0.15)", text: "#0a84ff" },
   negotiating: { bg: "rgba(255,214,10,0.15)", text: "#ffd60a" },
   confirmed: { bg: "rgba(48,209,88,0.15)", text: "#30d158" },
@@ -79,7 +79,7 @@ export default function BrandPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("identity");
   const [showAddCollab, setShowAddCollab] = useState(false);
 
-  if (!brand) return <div className="text-[rgba(235,235,245,0.3)]">Loading brand data...</div>;
+  if (!brand) return <div className="text-[#aeaeb2]">Loading brand data...</div>;
 
   return (
     <div className="space-y-6">
@@ -89,7 +89,7 @@ export default function BrandPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex flex-wrap gap-1 rounded-[10px] bg-[rgba(255,255,255,0.04)] p-1">
+      <div className="flex flex-wrap gap-1 rounded-[10px] bg-[rgba(0,0,0,0.03)] p-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -98,7 +98,7 @@ export default function BrandPage() {
               onClick={() => setActiveTab(tab.key)}
               className={cn(
                 "flex items-center gap-1.5 px-4 py-1.5 text-[13px] font-medium rounded-lg transition-colors",
-                activeTab === tab.key ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[rgba(235,235,245,0.3)] hover:text-white"
+                activeTab === tab.key ? "bg-[rgba(0,0,0,0.05)] text-[#1d1d1f]" : "text-[#aeaeb2] hover:text-[#1d1d1f]"
               )}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -116,17 +116,17 @@ export default function BrandPage() {
             <div className="space-y-4">
               <div>
                 <p className="text-micro mb-1">Handle</p>
-                <p className="text-[14px] font-medium text-white">@flywithgarrett</p>
+                <p className="text-[14px] font-medium text-[#1d1d1f]">@flywithgarrett</p>
               </div>
               <div>
                 <p className="text-micro mb-1">Tagline</p>
-                <p className="text-[14px] font-medium text-white italic">"Living at altitude."</p>
+                <p className="text-[14px] font-medium text-[#1d1d1f] italic">"Living at altitude."</p>
               </div>
               <div>
                 <p className="text-micro mb-1">Tone</p>
                 <div className="flex flex-wrap gap-1.5">
                   {["Authentic", "Aspirational", "Approachable"].map((t) => (
-                    <span key={t} className="pill px-2.5 py-1 text-[12px] text-[rgba(235,235,245,0.6)]">{t}</span>
+                    <span key={t} className="pill px-2.5 py-1 text-[12px] text-[#86868b]">{t}</span>
                   ))}
                 </div>
               </div>
@@ -141,7 +141,7 @@ export default function BrandPage() {
                 <div className="space-y-1.5">
                   {["Aviation Dreamers", "Lifestyle Followers", "Founder Curious"].map((a) => (
                     <div key={a} className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-black/30" />
                       <span className="text-body text-sm">{a}</span>
                     </div>
                   ))}
@@ -151,7 +151,7 @@ export default function BrandPage() {
                 <p className="text-micro mb-2">Content Worlds</p>
                 <div className="flex flex-wrap gap-2">
                   {["The Flight Deck", "The Life", "The Build"].map((w) => (
-                    <span key={w} className="pill px-2.5 py-1 text-[12px] text-[rgba(235,235,245,0.6)]">{w}</span>
+                    <span key={w} className="pill px-2.5 py-1 text-[12px] text-[#86868b]">{w}</span>
                   ))}
                 </div>
               </div>
@@ -165,8 +165,8 @@ export default function BrandPage() {
               {Object.entries(PILLAR_CONFIG).map(([key, val]) => (
                 <div key={key} className="text-center">
                   <div className="w-full h-12 rounded-lg mb-1.5" style={{ backgroundColor: val.color }} />
-                  <p className="text-xs font-medium text-white">{val.label}</p>
-                  <p className="text-[10px] text-[rgba(235,235,245,0.3)]">{val.color}</p>
+                  <p className="text-xs font-medium text-[#1d1d1f]">{val.label}</p>
+                  <p className="text-[10px] text-[#aeaeb2]">{val.color}</p>
                 </div>
               ))}
             </div>
@@ -183,7 +183,7 @@ export default function BrandPage() {
               <div key={platform} className="card-static p-5">
                 <div className="flex items-center gap-2 mb-3">
                   {Icon && <Icon className="w-4 h-4" style={{ color: PLATFORM_CONFIG[platform].color }} />}
-                  <span className="text-[13px] font-medium text-white">{PLATFORM_CONFIG[platform].label}</span>
+                  <span className="text-[13px] font-medium text-[#1d1d1f]">{PLATFORM_CONFIG[platform].label}</span>
                 </div>
                 <Form method="post" className="space-y-3">
                   <input type="hidden" name="intent" value="update-bio" />
@@ -225,9 +225,9 @@ export default function BrandPage() {
                 { name: "Strawberry Lemonade", color: "#EC4899" },
                 { name: "Lemon Lime", color: "#10B981" },
               ].map((product) => (
-                <div key={product.name} className="flex items-center gap-3 p-3 rounded-lg bg-[rgba(255,255,255,0.04)]">
+                <div key={product.name} className="flex items-center gap-3 p-3 rounded-lg bg-[rgba(0,0,0,0.03)]">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: product.color }} />
-                  <span className="text-[14px] font-medium text-white">{product.name}</span>
+                  <span className="text-[14px] font-medium text-[#1d1d1f]">{product.name}</span>
                 </div>
               ))}
             </div>
@@ -297,7 +297,7 @@ export default function BrandPage() {
 
           {collabs.length === 0 ? (
             <div className="card-static p-12 text-center">
-              <Handshake className="w-8 h-8 text-[rgba(235,235,245,0.3)] mx-auto mb-2" />
+              <Handshake className="w-8 h-8 text-[#aeaeb2] mx-auto mb-2" />
               <p className="text-micro">No collaborations tracked yet.</p>
             </div>
           ) : (
@@ -307,7 +307,7 @@ export default function BrandPage() {
                 return (
                   <div key={collab.id} className="card-static p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-sm text-white">{collab.creatorName}</p>
+                      <p className="font-medium text-sm text-[#1d1d1f]">{collab.creatorName}</p>
                       <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: sc.bg, color: sc.text }}>{collab.status}</span>
                     </div>
                     <p className="text-micro capitalize">{PLATFORM_CONFIG[collab.platform].label}</p>
@@ -322,12 +322,12 @@ export default function BrandPage() {
           {/* Add Collab Dialog */}
           {showAddCollab && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/60" onClick={() => setShowAddCollab(false)} />
+              <div className="absolute inset-0 bg-black/30" onClick={() => setShowAddCollab(false)} />
               <div className="relative w-full max-w-md card-static p-6">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-[16px] font-medium text-white">New Collaboration</h2>
-                  <button onClick={() => setShowAddCollab(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                    <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
+                  <h2 className="text-[16px] font-medium text-[#1d1d1f]">New Collaboration</h2>
+                  <button onClick={() => setShowAddCollab(false)} className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded">
+                    <X className="w-4 h-4 text-[#aeaeb2]" />
                   </button>
                 </div>
                 <Form method="post" className="space-y-4" onSubmit={() => setShowAddCollab(false)}>

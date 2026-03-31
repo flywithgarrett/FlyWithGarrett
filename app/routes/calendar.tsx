@@ -157,12 +157,12 @@ export default function CalendarPage() {
 
       {/* View Toggle + Month Navigation */}
       <div className="flex items-center justify-between">
-        <div className="flex rounded-[10px] bg-[rgba(255,255,255,0.04)] p-1">
+        <div className="flex rounded-[10px] bg-[rgba(0,0,0,0.03)] p-1">
           <button
             onClick={() => setView("month")}
             className={cn(
               "px-4 py-1.5 text-[13px] font-medium rounded-lg transition-colors",
-              view === "month" ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[rgba(235,235,245,0.3)] hover:text-white"
+              view === "month" ? "bg-[rgba(0,0,0,0.05)] text-[#1d1d1f]" : "text-[#aeaeb2] hover:text-[#1d1d1f]"
             )}
           >
             Month
@@ -171,7 +171,7 @@ export default function CalendarPage() {
             onClick={() => setView("week")}
             className={cn(
               "px-4 py-1.5 text-[13px] font-medium rounded-lg transition-colors",
-              view === "week" ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[rgba(235,235,245,0.3)] hover:text-white"
+              view === "week" ? "bg-[rgba(0,0,0,0.05)] text-[#1d1d1f]" : "text-[#aeaeb2] hover:text-[#1d1d1f]"
             )}
           >
             Week
@@ -180,11 +180,11 @@ export default function CalendarPage() {
 
         <div className="flex items-center gap-3">
           <button onClick={() => navigateMonth(-1)} className="btn-ghost p-2">
-            <ChevronLeft className="w-4 h-4 text-white" />
+            <ChevronLeft className="w-4 h-4 text-[#1d1d1f]" />
           </button>
           <span className="text-section">{monthName.toUpperCase()}</span>
           <button onClick={() => navigateMonth(1)} className="btn-ghost p-2">
-            <ChevronRight className="w-4 h-4 text-white" />
+            <ChevronRight className="w-4 h-4 text-[#1d1d1f]" />
           </button>
         </div>
       </div>
@@ -193,12 +193,12 @@ export default function CalendarPage() {
       {view === "month" && (
         <div className="grid grid-cols-7 gap-px rounded-2xl overflow-hidden" style={{ backgroundColor: "transparent" }}>
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <div key={d} className="bg-[#2c2c2e] p-2 text-center text-micro">
+            <div key={d} className="bg-[#f5f5f7] p-2 text-center text-micro">
               {d}
             </div>
           ))}
           {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="bg-[#1c1c1e] min-h-[100px] p-1" />
+            <div key={`empty-${i}`} className="bg-white min-h-[100px] p-1" />
           ))}
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1;
@@ -212,11 +212,11 @@ export default function CalendarPage() {
                 key={day}
                 className={cn(
                   "card-static min-h-[100px] p-1.5 !rounded-none",
-                  isToday && "ring-1 ring-white/20 ring-inset"
+                  isToday && "ring-1 ring-black/10 ring-inset"
                 )}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className={cn("text-[11px] font-medium", isToday ? "text-white" : "text-[rgba(235,235,245,0.3)]")}>{day}</span>
+                  <span className={cn("text-[11px] font-medium", isToday ? "text-[#1d1d1f]" : "text-[#aeaeb2]")}>{day}</span>
                   {cadence && (
                     <span
                       className="text-[10px] font-medium"
@@ -241,7 +241,7 @@ export default function CalendarPage() {
                     </button>
                   ))}
                   {dayItems.length > 3 && (
-                    <span className="text-[10px] text-[rgba(235,235,245,0.3)] px-1">+{dayItems.length - 3} more</span>
+                    <span className="text-[10px] text-[#aeaeb2] px-1">+{dayItems.length - 3} more</span>
                   )}
                 </div>
               </div>
@@ -265,14 +265,14 @@ export default function CalendarPage() {
                 key={dateStr}
                 className={cn(
                   "card-static",
-                  isToday && "ring-1 ring-white/20"
+                  isToday && "ring-1 ring-black/10"
                 )}
               >
                 <div className="p-3 pb-1">
                   <div className="text-micro">
                     {day.toLocaleDateString("en-US", { weekday: "short" })}
                   </div>
-                  <div className={cn("text-sm font-semibold", isToday ? "text-white" : "text-[rgba(235,235,245,0.6)]")}>
+                  <div className={cn("text-sm font-semibold", isToday ? "text-[#1d1d1f]" : "text-[#86868b]")}>
                     {day.getDate()}
                   </div>
                   {cadence && (
@@ -304,7 +304,7 @@ export default function CalendarPage() {
                         <div className="flex items-center gap-1 mt-1">
                           {item.platforms.map((p) => {
                             const Icon = platformIcons[p];
-                            return Icon ? <Icon key={p} className="w-3 h-3 text-[rgba(235,235,245,0.3)]" /> : null;
+                            return Icon ? <Icon key={p} className="w-3 h-3 text-[#aeaeb2]" /> : null;
                           })}
                         </div>
                       </button>
@@ -320,12 +320,12 @@ export default function CalendarPage() {
       {/* Create Dialog */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setShowCreate(false)} />
+          <div className="absolute inset-0 bg-black/30" onClick={() => setShowCreate(false)} />
           <div className="relative w-full max-w-md card-static p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[16px] font-medium text-white">New Content Item</h2>
-              <button onClick={() => setShowCreate(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
+              <h2 className="text-[16px] font-medium text-[#1d1d1f]">New Content Item</h2>
+              <button onClick={() => setShowCreate(false)} className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded">
+                <X className="w-4 h-4 text-[#aeaeb2]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowCreate(false)}>
@@ -342,7 +342,7 @@ export default function CalendarPage() {
                   {PLATFORMS.map((p) => {
                     const Icon = platformIcons[p];
                     return (
-                      <label key={p} className="flex items-center gap-1.5 text-[13px] text-[rgba(235,235,245,0.6)]">
+                      <label key={p} className="flex items-center gap-1.5 text-[13px] text-[#86868b]">
                         <input type="checkbox" name="platforms" value={p} defaultChecked={p === "instagram"} className="rounded" />
                         {Icon && <Icon className="w-3.5 h-3.5" />}
                         {PLATFORM_CONFIG[p].label}
@@ -370,12 +370,12 @@ export default function CalendarPage() {
       {/* Item Detail Dialog */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setSelectedItem(null)} />
+          <div className="absolute inset-0 bg-black/30" onClick={() => setSelectedItem(null)} />
           <div className="relative w-full max-w-md card-static p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[16px] font-medium text-white">{selectedItem.title}</h2>
-              <button onClick={() => setSelectedItem(null)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
+              <h2 className="text-[16px] font-medium text-[#1d1d1f]">{selectedItem.title}</h2>
+              <button onClick={() => setSelectedItem(null)} className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded">
+                <X className="w-4 h-4 text-[#aeaeb2]" />
               </button>
             </div>
             <div className="space-y-4">
@@ -410,7 +410,7 @@ export default function CalendarPage() {
                 {selectedItem.platforms.map((p) => {
                   const Icon = platformIcons[p];
                   return (
-                    <span key={p} className="flex items-center gap-1 text-xs text-[rgba(235,235,245,0.6)]">
+                    <span key={p} className="flex items-center gap-1 text-xs text-[#86868b]">
                       {Icon && <Icon className="w-3 h-3" />}
                       {PLATFORM_CONFIG[p].label}
                     </span>

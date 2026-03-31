@@ -14,7 +14,7 @@ export function meta() {
   return [
     { title: "FlyWithGarrett — Creator OS" },
     { name: "description", content: "Personal creator dashboard for @flywithgarrett" },
-    { name: "theme-color", content: "#1c1c1e" },
+    { name: "theme-color", content: "#ffffff" },
   ];
 }
 

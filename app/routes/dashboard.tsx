@@ -77,7 +77,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = { instagram: Camera, youtube: Play, tiktok: Music2 };
-const reachColors: Record<string, string> = { high: "#30d158", medium: "#ffd60a", low: "rgba(235,235,245,0.3)" };
+const reachColors: Record<string, string> = { high: "#30d158", medium: "#ffd60a", low: "#aeaeb2" };
 
 export default function Dashboard() {
   const { todayCadence, pillarConfig, todayContent, platformStats, latestAtlas, dailyIdeas, trends, hasApiKey } = useLoaderData<typeof loader>();
@@ -100,11 +100,11 @@ export default function Dashboard() {
       </div>
 
       {/* Today's Content Brief — HERO CARD */}
-      <div className="card-static" style={{ borderLeft: `3px solid ${pillarConfig.color}`, background: `linear-gradient(135deg, #2c2c2e 0%, ${pillarConfig.color}08 100%)` }}>
+      <div className="card-static" style={{ borderLeft: `3px solid ${pillarConfig.color}`, background: `linear-gradient(135deg, #f5f5f7 0%, ${pillarConfig.color}08 100%)` }}>
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4" style={{ color: pillarConfig.color }} />
-            <p className="text-[16px] font-medium text-white">Today's Content Brief</p>
+            <p className="text-[16px] font-medium text-[#1d1d1f]">Today's Content Brief</p>
           </div>
           <fetcher.Form method="post">
             <input type="hidden" name="intent" value="regenerate-brief" />
@@ -125,10 +125,10 @@ export default function Dashboard() {
 
         <div className="space-y-3">
           {dailyIdeas.map((idea, i) => (
-            <div key={i} className="p-4 rounded-[16px] bg-[rgba(255,255,255,0.04)]">
+            <div key={i} className="p-4 rounded-[16px] bg-[rgba(0,0,0,0.03)]">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[16px] font-medium text-white leading-snug">"{idea.hook}"</p>
+                  <p className="text-[16px] font-medium text-[#1d1d1f] leading-snug">"{idea.hook}"</p>
                   <div className="flex items-center gap-2 mt-2.5 flex-wrap">
                     <span className="pill">{idea.format}</span>
                     <span className="pill">{idea.platform}</span>
@@ -137,7 +137,7 @@ export default function Dashboard() {
                       <span className="text-micro">{idea.estimated_reach} reach</span>
                     </span>
                   </div>
-                  <p className="text-[13px] italic text-[rgba(235,235,245,0.4)] mt-2">{idea.why_now}</p>
+                  <p className="text-[13px] italic text-[#86868b] mt-2">{idea.why_now}</p>
                   <p className="text-[13px] mt-1" style={{ color: pillarConfig.color }}>{idea.filming_tip}</p>
                 </div>
                 <div className="flex flex-col gap-1 shrink-0">
@@ -162,13 +162,13 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-4 h-4 text-[#0a84ff]" />
-            <p className="text-section" style={{ color: "rgba(235,235,245,0.3)" }}>What's Working Right Now</p>
+            <p className="text-section" style={{ color: "#86868b" }}>What's Working Right Now</p>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {trends.map((t, i) => (
               <div key={i} className="card-static min-w-[300px] max-w-[340px] shrink-0">
-                <p className="text-[14px] font-medium text-white leading-snug">{t.trend}</p>
-                <p className="text-[12px] text-[rgba(235,235,245,0.4)] mt-2">{t.why_it_works}</p>
+                <p className="text-[14px] font-medium text-[#1d1d1f] leading-snug">{t.trend}</p>
+                <p className="text-[12px] text-[#86868b] mt-2">{t.why_it_works}</p>
                 <p className="text-[13px] mt-2 text-[#0a84ff]">{t.how_garrett_can_use_it}</p>
               </div>
             ))}
@@ -187,7 +187,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     {Icon && <Icon className="w-4 h-4" style={{ color: p.color }} />}
-                    <span className="text-[13px] text-[rgba(235,235,245,0.6)]">{p.label}</span>
+                    <span className="text-[13px] text-[#86868b]">{p.label}</span>
                   </div>
                   {p.connected ? (
                     <span className="text-[10px] text-[#30d158] bg-[rgba(48,209,88,0.12)] px-2 py-0.5 rounded-full">Connected</span>
@@ -211,8 +211,8 @@ export default function Dashboard() {
               <Droplets className="w-5 h-5 text-[#30d158]" />
             </div>
             <div className="flex-1">
-              <p className="text-[14px] font-medium text-white">Atlas Hydration</p>
-              <p className="text-[12px] text-[rgba(235,235,245,0.4)]">4 Flavors • Active{latestAtlas ? ` • $${latestAtlas.revenue.toLocaleString()} rev` : ""}</p>
+              <p className="text-[14px] font-medium text-[#1d1d1f]">Atlas Hydration</p>
+              <p className="text-[12px] text-[#86868b]">4 Flavors • Active{latestAtlas ? ` • $${latestAtlas.revenue.toLocaleString()} rev` : ""}</p>
             </div>
             <div className="w-2 h-2 rounded-full bg-[#30d158]" />
           </Link>
@@ -221,8 +221,8 @@ export default function Dashboard() {
               <Smartphone className="w-5 h-5 text-[#64d2ff]" />
             </div>
             <div className="flex-1">
-              <p className="text-[14px] font-medium text-white">SkyWay</p>
-              <p className="text-[12px] text-[rgba(235,235,245,0.4)]">Flight tracking app • MVP Build</p>
+              <p className="text-[14px] font-medium text-[#1d1d1f]">SkyWay</p>
+              <p className="text-[12px] text-[#86868b]">Flight tracking app • MVP Build</p>
             </div>
             <div className="w-2 h-2 rounded-full bg-[#0a84ff]" />
           </Link>
@@ -232,17 +232,17 @@ export default function Dashboard() {
       {/* Manager Directives */}
       <div className="card-static overflow-hidden !p-0">
         <button onClick={() => setDirectivesOpen(!directivesOpen)} className="w-full flex items-center justify-between p-5 text-left">
-          <span className="text-[14px] font-medium text-white">Manager Directives</span>
-          {directivesOpen ? <ChevronUp className="w-4 h-4 text-[rgba(235,235,245,0.3)]" /> : <ChevronDown className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />}
+          <span className="text-[14px] font-medium text-[#1d1d1f]">Manager Directives</span>
+          {directivesOpen ? <ChevronUp className="w-4 h-4 text-[#aeaeb2]" /> : <ChevronDown className="w-4 h-4 text-[#aeaeb2]" />}
         </button>
         {directivesOpen && (
           <div className="px-5 pb-5 space-y-1">
             {MANAGER_DIRECTIVES.map((d, i) => (
-              <label key={i} className="flex items-center gap-3 py-2.5 border-b border-[rgba(255,255,255,0.04)] last:border-0 cursor-pointer group">
-                <div className="w-5 h-5 rounded-[6px] border border-[rgba(255,255,255,0.15)] group-hover:border-[rgba(255,255,255,0.3)] flex items-center justify-center shrink-0 transition-colors">
+              <label key={i} className="flex items-center gap-3 py-2.5 border-b border-[rgba(0,0,0,0.06)] last:border-0 cursor-pointer group">
+                <div className="w-5 h-5 rounded-[6px] border border-[rgba(0,0,0,0.12)] group-hover:border-[rgba(0,0,0,0.2)] flex items-center justify-center shrink-0 transition-colors">
                   <input type="checkbox" className="sr-only peer" />
                 </div>
-                <span className="text-[13px] text-[rgba(235,235,245,0.6)] group-hover:text-white transition-colors">{d}</span>
+                <span className="text-[13px] text-[#86868b] group-hover:text-[#1d1d1f] transition-colors">{d}</span>
               </label>
             ))}
           </div>
