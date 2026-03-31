@@ -19,7 +19,7 @@ export function Sidebar() {
         {open ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
       </button>
       {open && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden fade-in" onClick={() => setOpen(false)} />}
-      <aside className={`fixed left-0 top-0 bottom-0 z-40 w-[240px] bg-[#161618] flex flex-col transition-transform duration-200 lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed left-0 top-0 bottom-0 z-40 w-[240px] bg-[#1c1c1e] flex flex-col transition-transform duration-200 lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
         {/* Logo */}
         <div className="px-5 pt-7 pb-5">
           <div className="flex items-center gap-3">

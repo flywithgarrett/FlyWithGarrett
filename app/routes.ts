@@ -3,6 +3,8 @@ import { type RouteConfig, index, route, layout } from "@react-router/dev/routes
 export default [
   index("routes/home.tsx"),
   route("login", "routes/login.tsx"),
+  route("api/generate-script", "routes/api.generate-script.ts"),
+  route("api/save-idea", "routes/api.save-idea.ts"),
   route("auth/youtube", "routes/auth.youtube.tsx"),
   route("auth/youtube/callback", "routes/auth.youtube.callback.tsx"),
   route("auth/instagram", "routes/auth.instagram.tsx"),
