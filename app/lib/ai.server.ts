@@ -1,20 +1,48 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { kvGet, kvSet } from "./kv.server";
-import { PILLAR_HOOKS } from "./constants";
+import { PILLAR_HOOKS, WEEKLY_CADENCE, PILLAR_CONFIG } from "./constants";
 import type { Pillar } from "./types";
-
-const SYSTEM_PROMPT = `You are the personal creative director and content strategist for Garrett Ray (@flywithgarrett). He is a Boeing 787 commercial airline pilot, NYC-based lifestyle creator with 806K Instagram followers and 542K TikTok followers, founder of Atlas Hydration (clean zero-sugar electrolyte brand), and builder of SkyWay (flight tracking app). His dog is Bella (Weimaraner). He lives in NYC. His tone: confident, authentic, aspirational, grounded, funny, self-aware. NEVER mention airports, pilot uniforms, or cockpit content for YouTube/TikTok. His 5 content pillars are:
-1. Lifestyle & Finance (NYC life, credit cards, investing)
-2. Dog Dad (Bella, NYC dog adventures)
-3. Peak Performance (gym, paddle, supplements, optimize life)
-4. Entrepreneur/Atlas (CPG brand building, business tips)
-5. Pilot Life (subtle lifestyle angle, no uniform content)
-Always write in his authentic voice. Short punchy sentences. Real and relatable.`;
 
 function getClient(): Anthropic | null {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
   return new Anthropic({ apiKey });
+}
+
+export function getMasterContext(data: {
+  date?: string; dayOfWeek?: string; pillar?: string; pilotStatus?: string;
+  calendarEvents?: string; workout?: string; atlasStatus?: string; skywayStatus?: string;
+  fitnessStatus?: string;
+}): string {
+  return `You are Garrett Ray's personal AI Chief of Staff and Executive Assistant.
+You have complete context on every area of his life and business.
+
+IDENTITY:
+- Garrett Ray, @flywithgarrett
+- Boeing 787 commercial airline pilot (American Airlines)
+- NYC-based lifestyle creator: 806K Instagram, 542K TikTok, 182K YouTube
+- Founder: Atlas Hydration (clean zero-sugar electrolytes, 4 flavors, $29.99)
+- Builder: SkyWay app (premium flight tracker, in development)
+- Dog dad: Bella (Weimaraner)
+- Background: Charlotte NC, wrestled competitively, avid golfer, paddle tennis
+- Collaborators: Joey and Ali (content strategy team)
+
+TODAY: ${data.date || new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+Content pillar: ${data.pillar || "Lifestyle & Finance"}
+Pilot status: ${data.pilotStatus || "Unknown"}
+Calendar: ${data.calendarEvents || "No events loaded"}
+Workout: ${data.workout || "Check fitness plan"}
+Atlas: ${data.atlasStatus || "Active — 4 flavors"}
+SkyWay: ${data.skywayStatus || "MVP Build phase"}
+
+CONTENT RULES:
+- Instagram: lifestyle, dog dad, finance, travel, Optimize Life
+- YouTube/TikTok: entrepreneur, Atlas, educational, quick-hit
+- NEVER: airport, cockpit, uniform content on TikTok/YouTube
+- Post 4-8 Instagram Stories daily
+- Send new series concepts to Joey and Ali first
+
+Be proactive, specific, actionable. Never generic. Think like a $300K/year EA.`;
 }
 
 export async function aiGenerate(userPrompt: string, systemOverride?: string): Promise<string | null> {
@@ -24,7 +52,7 @@ export async function aiGenerate(userPrompt: string, systemOverride?: string): P
     const msg = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 2500,
-      system: systemOverride || SYSTEM_PROMPT,
+      system: systemOverride || getMasterContext({}),
       messages: [{ role: "user", content: userPrompt }],
     });
     return msg.content[0].type === "text" ? msg.content[0].text : null;
@@ -35,132 +63,116 @@ export async function aiGenerate(userPrompt: string, systemOverride?: string): P
 }
 
 export interface DailyIdea {
-  hook: string;
-  format: string;
-  platform: string;
-  why_now: string;
-  filming_tip: string;
-  estimated_reach: "low" | "medium" | "high";
+  hook: string; format: string; platform: string;
+  why_now: string; filming_tip: string; estimated_reach: "low" | "medium" | "high";
 }
 
 export async function generateDailyBrief(pillar: string, pillarDescription: string, date: string): Promise<DailyIdea[]> {
-  // Check cache first
   const cacheKey = `cache:brief:${date}`;
   const cached = await kvGet<DailyIdea[]>(cacheKey);
   if (cached && cached.length > 0) return cached;
 
+  const system = getMasterContext({ date, pillar });
   const text = await aiGenerate(
-    `Generate 3 specific, actionable content ideas for today (${date}).
-Today's pillar: ${pillar} — ${pillarDescription}.
-Each idea must be hyper-specific — not generic advice, actual content pieces Garrett can film TODAY with his phone in NYC.
-For each idea include:
-- hook: the exact scroll-stopping first line (make it specific and punchy)
-- format: one of: TikTok, Reel, YouTube Short, Instagram Story, YouTube Long
-- platform: one of: TikTok, Instagram, YouTube
-- why_now: one sentence on why this works RIGHT NOW (trend, timing, relevance)
-- filming_tip: one specific tip for HOW to film this today (location, angle, approach)
-- estimated_reach: low/medium/high based on pillar performance patterns
-
-Return ONLY a JSON array, no markdown:
-[{"hook":"...","format":"...","platform":"...","why_now":"...","filming_tip":"...","estimated_reach":"low|medium|high"}]`,
-    `You are the personal creative director for Garrett Ray (@flywithgarrett), a Boeing 787 pilot, NYC lifestyle creator (806K Instagram, 542K TikTok), Atlas Hydration founder, and SkyWay app builder. His dog is Bella (Weimaraner). Tone: confident, authentic, aspirational, funny, self-aware. NEVER suggest airport, cockpit, or uniform content for TikTok/YouTube. Today is ${date}. Today's content pillar is ${pillar}. Return ONLY valid JSON, no markdown, no explanation.`
+    `Generate 3 specific content ideas for today. Pillar: "${pillar}" — ${pillarDescription}.
+Each must be hyper-specific — actual content Garrett can film TODAY in NYC.
+Return ONLY JSON array: [{"hook":"...","format":"TikTok|Reel|YouTube Short|Instagram Story|YouTube Long","platform":"TikTok|Instagram|YouTube","why_now":"...","filming_tip":"...","estimated_reach":"low|medium|high"}]`,
+    system
   );
-
-  if (!text) return getFallbackIdeas(pillar as Pillar);
+  if (!text) return getFallbackIdeas(pillar);
   const match = text.match(/\[[\s\S]*?\]/);
-  if (!match) return getFallbackIdeas(pillar as Pillar);
+  if (!match) return getFallbackIdeas(pillar);
   try {
     const ideas = JSON.parse(match[0]) as DailyIdea[];
-    if (ideas.length > 0) {
-      await kvSet(cacheKey, ideas);
-      return ideas;
-    }
-    return getFallbackIdeas(pillar as Pillar);
-  } catch {
-    return getFallbackIdeas(pillar as Pillar);
-  }
+    if (ideas.length > 0) { await kvSet(cacheKey, ideas); return ideas; }
+    return getFallbackIdeas(pillar);
+  } catch { return getFallbackIdeas(pillar); }
 }
 
-function getFallbackIdeas(pillarKey: Pillar): DailyIdea[] {
+function getFallbackIdeas(pillar: string): DailyIdea[] {
+  const pillarKey = Object.keys(PILLAR_CONFIG).find((k) => PILLAR_CONFIG[k as Pillar].label.toLowerCase().includes(pillar.toLowerCase())) as Pillar || "lifestyle";
   const hooks = PILLAR_HOOKS[pillarKey] || PILLAR_HOOKS.lifestyle;
   return hooks.slice(0, 3).map((hook) => ({
-    hook,
-    format: "Reel",
-    platform: "Instagram",
-    why_now: "Evergreen content that consistently performs",
-    filming_tip: "Film in natural light, authentic setting",
-    estimated_reach: "medium" as const,
+    hook, format: "Reel", platform: "Instagram", why_now: "Evergreen content", filming_tip: "Film in natural light", estimated_reach: "medium" as const,
   }));
 }
 
-export interface TrendInsight {
-  trend: string;
-  why_it_works: string;
-  how_garrett_can_use_it: string;
+export interface DailyBriefing {
+  summary: string; priority: string; bestFilmTime: string;
+  atlasAction: string; skywayAction: string; fitnessNote: string;
 }
 
+export async function generateMorningBriefing(context: Parameters<typeof getMasterContext>[0]): Promise<DailyBriefing | null> {
+  const cacheKey = `cache:morning:${context.date || new Date().toISOString().split("T")[0]}`;
+  const cached = await kvGet<DailyBriefing>(cacheKey);
+  if (cached) return cached;
+
+  const text = await aiGenerate(
+    `Given everything about Garrett's day today, generate:
+1. A 2-sentence executive morning briefing (summary)
+2. His #1 priority for today across all life areas (priority)
+3. Best time to film content today based on schedule (bestFilmTime)
+4. One Atlas Hydration action for today (atlasAction)
+5. One SkyWay action for today (skywayAction)
+6. One fitness/personal note (fitnessNote)
+Return ONLY JSON: {"summary":"...","priority":"...","bestFilmTime":"...","atlasAction":"...","skywayAction":"...","fitnessNote":"..."}`,
+    getMasterContext(context)
+  );
+  if (!text) return null;
+  const match = text.match(/\{[\s\S]*?\}/);
+  if (!match) return null;
+  try {
+    const briefing = JSON.parse(match[0]) as DailyBriefing;
+    await kvSet(cacheKey, briefing);
+    return briefing;
+  } catch { return null; }
+}
+
+export interface TrendInsight { trend: string; why_it_works: string; how_garrett_can_use_it: string; }
+
 export async function fetchTrendingContent(): Promise<TrendInsight[]> {
-  // Cache for 4 hours
   const now = new Date();
-  const hourBlock = Math.floor(now.getHours() / 4);
-  const cacheKey = `cache:trends:${now.toISOString().split("T")[0]}:${hourBlock}`;
+  const cacheKey = `cache:trends:${now.toISOString().split("T")[0]}:${Math.floor(now.getHours() / 4)}`;
   const cached = await kvGet<TrendInsight[]>(cacheKey);
   if (cached && cached.length > 0) return cached;
 
   const client = getClient();
   if (!client) return [];
-
   try {
     const msg = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2000,
+      model: "claude-sonnet-4-20250514", max_tokens: 2000,
       tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-      messages: [{
-        role: "user",
-        content: `Search for what content is trending right now on TikTok and Instagram in these niches: NYC lifestyle, personal finance for millennials, dog content, health & wellness supplements, entrepreneurship / brand building. What formats, hooks, and topics are getting the most engagement this week? Return 5 specific insights Garrett (@flywithgarrett) can act on TODAY. Format as JSON array with: trend, why_it_works, how_garrett_can_use_it. Return ONLY the JSON array, no markdown.`
-      }],
+      messages: [{ role: "user", content: `Search for trending content on TikTok and Instagram right now in: NYC lifestyle, personal finance millennials, dog content, wellness supplements, entrepreneurship. Return 5 specific insights as JSON array: [{"trend":"...","why_it_works":"...","how_garrett_can_use_it":"..."}]` }],
     });
-
-    // Extract text from the response
     const textBlock = msg.content.find((b: any) => b.type === "text");
     const text = textBlock && textBlock.type === "text" ? textBlock.text : null;
     if (!text) return [];
-
     const match = text.match(/\[[\s\S]*?\]/);
     if (!match) return [];
     const trends = JSON.parse(match[0]) as TrendInsight[];
     if (trends.length > 0) await kvSet(cacheKey, trends);
     return trends;
-  } catch (e) {
-    console.error("Trend fetch error:", e);
-    return [];
-  }
+  } catch { return []; }
 }
 
 export async function generateScript(hook: string, format: string): Promise<string | null> {
-  const formatInstructions: Record<string, string> = {
-    "TikTok": "Write a 30-60 second TikTok script. Format: Hook (0-3s) → Body (3-45s) → CTA (45-60s). Include timestamps.",
-    "Reel": "Write a 30-60 second Instagram Reel script. Format: Hook (0-3s) → Body (3-45s) → CTA (45-60s). Include timestamps.",
-    "YouTube Short": "Write a 45-60 second YouTube Short script. Format: Hook → Key insight → CTA. Include timestamps.",
-    "YouTube Long": "Write a 90-second YouTube intro. Format: Hook (0-5s) → Tease (5-15s) → Intro (15-60s) → Transition (60-90s).",
-    "YouTube": "Write a 90-second YouTube intro. Format: Hook (0-5s) → Tease (5-15s) → Intro (15-60s) → Transition (60-90s).",
-    "Instagram Story": "Write a 5-8 frame Instagram Story sequence. Each frame: text overlay + visual description + duration.",
-    "Story": "Write a 5-8 frame Instagram Story sequence. Each frame: text overlay + visual description + duration.",
-    "Caption": "Write an Instagram caption. Format: Hook line → Story paragraph → CTA → Hashtag block (8-12 relevant hashtags).",
+  const instructions: Record<string, string> = {
+    "TikTok": "30-60 sec TikTok. Hook (0-3s) → Body (3-45s) → CTA (45-60s). Timestamps.",
+    "Reel": "30-60 sec Reel. Hook (0-3s) → Body (3-45s) → CTA (45-60s). Timestamps.",
+    "YouTube Short": "45-60 sec Short. Hook → Key insight → CTA. Timestamps.",
+    "YouTube Long": "90 sec YouTube intro. Hook (0-5s) → Tease (5-15s) → Intro (15-60s) → Transition.",
+    "YouTube": "90 sec YouTube intro. Hook (0-5s) → Tease (5-15s) → Intro (15-60s) → Transition.",
+    "Instagram Story": "5-8 frame Story sequence. Each frame: text overlay + visual + duration.",
+    "Story": "5-8 frame Story sequence. Each frame: text overlay + visual + duration.",
+    "Caption": "Instagram caption. Hook → Story paragraph → CTA → 10 hashtags.",
   };
-  return aiGenerate(
-    `Write a ${format} script for this hook: "${hook}"\n\n${formatInstructions[format] || formatInstructions["Reel"]}\n\nWrite in Garrett's voice. Short punchy sentences. No fluff.`
-  );
+  return aiGenerate(`Write a ${format} script for: "${hook}"\n${instructions[format] || instructions["Reel"]}\nGarrett's voice. Punchy. No fluff.`);
 }
 
 export async function editScript(script: string, instruction: string): Promise<string | null> {
-  return aiGenerate(`Edit this script based on the instruction.\n\nCurrent script:\n${script}\n\nInstruction: ${instruction}\n\nReturn ONLY the edited script, nothing else.`);
+  return aiGenerate(`Edit this script: ${instruction}\n\nScript:\n${script}\n\nReturn ONLY the edited script.`);
 }
 
 export async function generateAnalysis(contentData: string): Promise<string | null> {
-  return aiGenerate(
-    `Analyze this content performance data and return a JSON object (no markdown):
-{"whatsWorking":[{"insight":"...","evidence":"...","action":"..."}],"whatsNotWorking":[{"insight":"...","evidence":"...","action":"..."}],"contentGaps":[{"pillar":"...","gap":"...","suggestion":"..."}],"weeklyFocus":"...","overallScore":7,"scoreSummary":"..."}
-Provide 2-3 items per array. Be specific.\n\nData:\n${contentData}`
-  );
+  return aiGenerate(`Analyze this data and return JSON: {"whatsWorking":[{"insight":"...","evidence":"...","action":"..."}],"whatsNotWorking":[{"insight":"...","evidence":"...","action":"..."}],"contentGaps":[{"pillar":"...","gap":"...","suggestion":"..."}],"weeklyFocus":"...","overallScore":7,"scoreSummary":"..."}\nData:\n${contentData}`);
 }

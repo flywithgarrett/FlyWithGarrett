@@ -11,6 +11,8 @@ export default [
   route("auth/instagram/callback", "routes/auth.instagram.callback.tsx"),
   route("auth/tiktok", "routes/auth.tiktok.tsx"),
   route("auth/tiktok/callback", "routes/auth.tiktok.callback.tsx"),
+  route("auth/google-calendar", "routes/auth.google-calendar.tsx"),
+  route("auth/google-calendar/callback", "routes/auth.google-calendar.callback.tsx"),
   layout("routes/app-layout.tsx", [
     route("dashboard", "routes/dashboard.tsx"),
     route("calendar", "routes/calendar.tsx"),
@@ -18,5 +20,10 @@ export default [
     route("analytics", "routes/analytics.tsx"),
     route("brand", "routes/brand.tsx"),
     route("business", "routes/business.tsx"),
+    route("pilot", "routes/pilot.tsx"),
+    route("fitness", "routes/fitness.tsx"),
+    route("atlas", "routes/atlas.tsx"),
+    route("skyway", "routes/skyway.tsx"),
+    route("integrations", "routes/integrations.tsx"),
   ]),
 ] satisfies RouteConfig;
