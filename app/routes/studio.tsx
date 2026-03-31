@@ -85,11 +85,11 @@ export default function StudioPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-[12px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.07)] w-fit">
+      <div className="flex gap-1 p-1 rounded-[12px] bg-[rgba(255,255,255,0.04)] border border-[transparent] w-fit">
         {tabs.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key as typeof tab)}
             className={`flex items-center gap-1.5 px-3 py-[6px] rounded-[8px] text-[12px] font-medium transition-all ${
-              tab === t.key ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[#ffffff40] hover:text-[#ffffff70]"
+              tab === t.key ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[rgba(235,235,245,0.25)] hover:text-[#ffffff70]"
             }`}>
             <t.icon className="w-3.5 h-3.5" />{t.label}
           </button>
@@ -109,9 +109,9 @@ export default function StudioPage() {
                   className="w-full flex items-start justify-between p-5 text-left">
                   <div>
                     <p className="text-[15px] font-medium text-white">{p.label}</p>
-                    <p className="text-[12px] text-[#ffffff50] mt-1">{p.description}</p>
+                    <p className="text-[12px] text-[rgba(235,235,245,0.3)] mt-1">{p.description}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      {p.platforms.map((pl) => { const I = platformIcons[pl]; return I ? <I key={pl} className="w-3.5 h-3.5 text-[#ffffff30]" /> : null; })}
+                      {p.platforms.map((pl) => { const I = platformIcons[pl]; return I ? <I key={pl} className="w-3.5 h-3.5 text-[rgba(235,235,245,0.2)]" /> : null; })}
                       <span className="text-micro ml-1">Series: {p.series}</span>
                       <span className="text-micro">• {hooks.length} hooks</span>
                     </div>
@@ -122,8 +122,8 @@ export default function StudioPage() {
                   <div className="px-5 pb-5 space-y-2">
                     <div className="divider mb-3" />
                     {hooks.map((hook, i) => (
-                      <div key={i} className="flex items-center justify-between gap-3 p-3 rounded-[10px] bg-[rgba(255,255,255,0.03)]">
-                        <p className="text-[13px] text-[#ffffffcc] flex-1">"{hook}"</p>
+                      <div key={i} className="flex items-center justify-between gap-3 p-3 rounded-[10px] bg-[rgba(255,255,255,0.04)]">
+                        <p className="text-[13px] text-[rgba(235,235,245,0.6)] flex-1">"{hook}"</p>
                         <div className="flex gap-1 shrink-0">
                           <fetcher.Form method="post">
                             <input type="hidden" name="intent" value="write-script" />
@@ -155,7 +155,7 @@ export default function StudioPage() {
         <div className="space-y-5">
           {!currentScript && !isGenerating ? (
             <div className="card-static p-12 text-center">
-              <Sparkles className="w-8 h-8 text-[#ffffff15] mx-auto mb-3" />
+              <Sparkles className="w-8 h-8 text-[rgba(235,235,245,0.1)] mx-auto mb-3" />
               <p className="text-[15px] text-white mb-1">No script in progress</p>
               <p className="text-micro">Click "Write Script" on any hook from the Pillars tab to start.</p>
             </div>
@@ -239,8 +239,8 @@ export default function StudioPage() {
           </div>
           {filteredIdeas.length === 0 ? (
             <div className="card-static p-12 text-center">
-              <Lightbulb className="w-6 h-6 text-[#ffffff15] mx-auto mb-2" />
-              <p className="text-[13px] text-[#ffffff50]">No ideas yet. Save hooks from Pillars or add one above.</p>
+              <Lightbulb className="w-6 h-6 text-[rgba(235,235,245,0.1)] mx-auto mb-2" />
+              <p className="text-[13px] text-[rgba(235,235,245,0.3)]">No ideas yet. Save hooks from Pillars or add one above.</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -256,18 +256,18 @@ export default function StudioPage() {
                         <input type="hidden" name="intent" value="write-script" />
                         <input type="hidden" name="hook" value={idea.hookDraft || idea.title} />
                         <input type="hidden" name="pillar" value={idea.pillar} />
-                        <button type="submit" className="p-1 hover:bg-[rgba(255,255,255,0.06)] rounded" onClick={() => setTab("script")}>
-                          <Sparkles className="w-3 h-3 text-[#ffffff30]" />
+                        <button type="submit" className="p-1 hover:bg-[rgba(255,255,255,0.04)] rounded" onClick={() => setTab("script")}>
+                          <Sparkles className="w-3 h-3 text-[rgba(235,235,245,0.2)]" />
                         </button>
                       </fetcher.Form>
                       <Form method="post">
                         <input type="hidden" name="intent" value="delete-idea" />
                         <input type="hidden" name="id" value={idea.id} />
-                        <button type="submit" className="p-1 hover:bg-[rgba(255,255,255,0.06)] rounded"><Trash2 className="w-3 h-3 text-[#ffffff20]" /></button>
+                        <button type="submit" className="p-1 hover:bg-[rgba(255,255,255,0.04)] rounded"><Trash2 className="w-3 h-3 text-[rgba(235,235,245,0.12)]" /></button>
                       </Form>
                     </div>
                   </div>
-                  {idea.hookDraft && idea.hookDraft !== idea.title && <p className="text-[12px] text-[#ffffff40] mt-2 line-clamp-2">{idea.hookDraft}</p>}
+                  {idea.hookDraft && idea.hookDraft !== idea.title && <p className="text-[12px] text-[rgba(235,235,245,0.25)] mt-2 line-clamp-2">{idea.hookDraft}</p>}
                 </div>
               ))}
             </div>
@@ -282,7 +282,7 @@ export default function StudioPage() {
             <div key={s.id} className="card-static p-5" style={{ borderLeft: `2px solid ${PILLAR_CONFIG[s.pillar]?.color || "#fff"}30` }}>
               <p className="text-[14px] font-medium text-white">{s.name}</p>
               <p className="text-[11px] mt-0.5" style={{ color: PILLAR_CONFIG[s.pillar]?.color }}>{PILLAR_CONFIG[s.pillar]?.label}</p>
-              <p className="text-[12px] text-[#ffffff50] mt-2">{s.description}</p>
+              <p className="text-[12px] text-[rgba(235,235,245,0.3)] mt-2">{s.description}</p>
               <p className="text-micro mt-3">Episodes: {s.episodeCount}</p>
             </div>
           ))}

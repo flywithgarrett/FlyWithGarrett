@@ -19,10 +19,10 @@ export async function action({ request }: Route.ActionArgs) {
 export default function Login() {
   const actionData = useActionData<typeof action>();
   return (
-    <div className="min-h-screen bg-[#080809] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#1c1c1e] flex items-center justify-center p-4">
       <div className="w-full max-w-[340px]">
         <div className="text-center mb-10">
-          <div className="w-14 h-14 rounded-[16px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.07)] flex items-center justify-center mx-auto mb-5">
+          <div className="w-14 h-14 rounded-[16px] bg-[#2c2c2e] flex items-center justify-center mx-auto mb-5">
             <Plane className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-title">FlyWithGarrett</h1>
@@ -30,13 +30,13 @@ export default function Login() {
         </div>
         <Form method="post" className="space-y-4">
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#ffffff30]" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[rgba(235,235,245,0.3)]" />
             <input type="password" name="password" placeholder="Enter password" className="input-field pl-10" autoFocus />
           </div>
           {actionData?.error && <p className="text-[13px] text-[#ff453a]">{actionData.error}</p>}
           <button type="submit" className="btn-primary w-full">Enter Command Center</button>
         </Form>
-        <p className="text-[11px] text-[#ffffff20] text-center mt-10">Living at altitude.</p>
+        <p className="text-[11px] text-[rgba(235,235,245,0.15)] text-center mt-10">Living at altitude.</p>
       </div>
     </div>
   );

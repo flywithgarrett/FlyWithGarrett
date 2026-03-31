@@ -162,7 +162,7 @@ export default function CalendarPage() {
             onClick={() => setView("month")}
             className={cn(
               "px-4 py-1.5 text-[13px] font-medium rounded-lg transition-colors",
-              view === "month" ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[#ffffff50] hover:text-white"
+              view === "month" ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[rgba(235,235,245,0.3)] hover:text-white"
             )}
           >
             Month
@@ -171,7 +171,7 @@ export default function CalendarPage() {
             onClick={() => setView("week")}
             className={cn(
               "px-4 py-1.5 text-[13px] font-medium rounded-lg transition-colors",
-              view === "week" ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[#ffffff50] hover:text-white"
+              view === "week" ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[rgba(235,235,245,0.3)] hover:text-white"
             )}
           >
             Week
@@ -191,14 +191,14 @@ export default function CalendarPage() {
 
       {/* Month View */}
       {view === "month" && (
-        <div className="grid grid-cols-7 gap-px rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.07)" }}>
+        <div className="grid grid-cols-7 gap-px rounded-2xl overflow-hidden" style={{ backgroundColor: "transparent" }}>
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <div key={d} className="bg-[#111114] p-2 text-center text-micro">
+            <div key={d} className="bg-[#2c2c2e] p-2 text-center text-micro">
               {d}
             </div>
           ))}
           {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="bg-[#080809] min-h-[100px] p-1" />
+            <div key={`empty-${i}`} className="bg-[#1c1c1e] min-h-[100px] p-1" />
           ))}
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1;
@@ -216,7 +216,7 @@ export default function CalendarPage() {
                 )}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className={cn("text-[11px] font-medium", isToday ? "text-white" : "text-[#ffffff50]")}>{day}</span>
+                  <span className={cn("text-[11px] font-medium", isToday ? "text-white" : "text-[rgba(235,235,245,0.3)]")}>{day}</span>
                   {cadence && (
                     <span
                       className="text-[10px] font-medium"
@@ -241,7 +241,7 @@ export default function CalendarPage() {
                     </button>
                   ))}
                   {dayItems.length > 3 && (
-                    <span className="text-[10px] text-[#ffffff50] px-1">+{dayItems.length - 3} more</span>
+                    <span className="text-[10px] text-[rgba(235,235,245,0.3)] px-1">+{dayItems.length - 3} more</span>
                   )}
                 </div>
               </div>
@@ -272,7 +272,7 @@ export default function CalendarPage() {
                   <div className="text-micro">
                     {day.toLocaleDateString("en-US", { weekday: "short" })}
                   </div>
-                  <div className={cn("text-sm font-semibold", isToday ? "text-white" : "text-[#ffffffcc]")}>
+                  <div className={cn("text-sm font-semibold", isToday ? "text-white" : "text-[rgba(235,235,245,0.6)]")}>
                     {day.getDate()}
                   </div>
                   {cadence && (
@@ -304,7 +304,7 @@ export default function CalendarPage() {
                         <div className="flex items-center gap-1 mt-1">
                           {item.platforms.map((p) => {
                             const Icon = platformIcons[p];
-                            return Icon ? <Icon key={p} className="w-3 h-3 text-[#ffffff50]" /> : null;
+                            return Icon ? <Icon key={p} className="w-3 h-3 text-[rgba(235,235,245,0.3)]" /> : null;
                           })}
                         </div>
                       </button>
@@ -325,7 +325,7 @@ export default function CalendarPage() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[16px] font-medium text-white">New Content Item</h2>
               <button onClick={() => setShowCreate(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                <X className="w-4 h-4 text-[#ffffff50]" />
+                <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowCreate(false)}>
@@ -342,7 +342,7 @@ export default function CalendarPage() {
                   {PLATFORMS.map((p) => {
                     const Icon = platformIcons[p];
                     return (
-                      <label key={p} className="flex items-center gap-1.5 text-[13px] text-[#ffffffcc]">
+                      <label key={p} className="flex items-center gap-1.5 text-[13px] text-[rgba(235,235,245,0.6)]">
                         <input type="checkbox" name="platforms" value={p} defaultChecked={p === "instagram"} className="rounded" />
                         {Icon && <Icon className="w-3.5 h-3.5" />}
                         {PLATFORM_CONFIG[p].label}
@@ -375,7 +375,7 @@ export default function CalendarPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-[16px] font-medium text-white">{selectedItem.title}</h2>
               <button onClick={() => setSelectedItem(null)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                <X className="w-4 h-4 text-[#ffffff50]" />
+                <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
               </button>
             </div>
             <div className="space-y-4">
@@ -410,7 +410,7 @@ export default function CalendarPage() {
                 {selectedItem.platforms.map((p) => {
                   const Icon = platformIcons[p];
                   return (
-                    <span key={p} className="flex items-center gap-1 text-xs text-[#ffffffcc]">
+                    <span key={p} className="flex items-center gap-1 text-xs text-[rgba(235,235,245,0.6)]">
                       {Icon && <Icon className="w-3 h-3" />}
                       {PLATFORM_CONFIG[p].label}
                     </span>

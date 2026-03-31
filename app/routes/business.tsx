@@ -80,14 +80,14 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 const featureStatusConfig: Record<FeatureStatus, { label: string; bg: string; text: string }> = {
-  backlog: { label: "Backlog", bg: "rgba(255,255,255,0.08)", text: "#ffffff50" },
+  backlog: { label: "Backlog", bg: "rgba(255,255,255,0.08)", text: "rgba(235,235,245,0.3)" },
   in_dev: { label: "In Dev", bg: "rgba(10,132,255,0.15)", text: "#0a84ff" },
   shipped: { label: "Shipped", bg: "rgba(48,209,88,0.15)", text: "#30d158" },
 };
 
 const chartTooltipStyle = {
-  backgroundColor: "#111114",
-  border: "1px solid rgba(255,255,255,0.07)",
+  backgroundColor: "#2c2c2e",
+  border: "none",
   borderRadius: "12px",
   fontSize: "12px",
 };
@@ -144,7 +144,7 @@ export default function BusinessPage() {
               onClick={() => setActiveTab(tab.key)}
               className={cn(
                 "flex items-center gap-1.5 px-4 py-1.5 text-[13px] font-medium rounded-lg transition-colors",
-                activeTab === tab.key ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[#ffffff50] hover:text-white"
+                activeTab === tab.key ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[rgba(235,235,245,0.3)] hover:text-white"
               )}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -199,8 +199,8 @@ export default function BusinessPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={sortedAtlas}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis dataKey="recordedMonth" stroke="#ffffff30" tick={{ fontSize: 11 }} />
-                  <YAxis stroke="#ffffff30" tick={{ fontSize: 11 }} />
+                  <XAxis dataKey="recordedMonth" stroke="rgba(235,235,245,0.2)" tick={{ fontSize: 11 }} />
+                  <YAxis stroke="rgba(235,235,245,0.2)" tick={{ fontSize: 11 }} />
                   <Tooltip contentStyle={chartTooltipStyle} />
                   <Bar dataKey="revenue" name="Revenue" fill="#30d158" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -231,7 +231,7 @@ export default function BusinessPage() {
                     </span>
                     <span className="text-micro">({featuresByStatus[status].length})</span>
                   </div>
-                  <div className="space-y-2 min-h-[200px] p-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)]">
+                  <div className="space-y-2 min-h-[200px] p-2 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[transparent]">
                     {featuresByStatus[status].length === 0 ? (
                       <p className="text-micro text-center py-8">Empty</p>
                     ) : (
@@ -287,7 +287,7 @@ export default function BusinessPage() {
 
           {income.length === 0 ? (
             <div className="card-static p-12 text-center">
-              <DollarSign className="w-8 h-8 text-[#ffffff50] mx-auto mb-2" />
+              <DollarSign className="w-8 h-8 text-[rgba(235,235,245,0.3)] mx-auto mb-2" />
               <p className="text-micro">No income data logged yet.</p>
             </div>
           ) : (
@@ -297,8 +297,8 @@ export default function BusinessPage() {
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={incomeData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                    <XAxis dataKey="month" stroke="#ffffff30" tick={{ fontSize: 11 }} />
-                    <YAxis stroke="#ffffff30" tick={{ fontSize: 11 }} />
+                    <XAxis dataKey="month" stroke="rgba(235,235,245,0.2)" tick={{ fontSize: 11 }} />
+                    <YAxis stroke="rgba(235,235,245,0.2)" tick={{ fontSize: 11 }} />
                     <Tooltip contentStyle={chartTooltipStyle} />
                     <Legend />
                     <Bar dataKey="pilot" name="Pilot" fill="#0a84ff" stackId="income" />
@@ -340,7 +340,7 @@ export default function BusinessPage() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[16px] font-medium text-white">Log Atlas Revenue</h2>
               <button onClick={() => setShowLogRevenue(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                <X className="w-4 h-4 text-[#ffffff50]" />
+                <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowLogRevenue(false)}>
@@ -364,7 +364,7 @@ export default function BusinessPage() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[16px] font-medium text-white">New SkyWay Feature</h2>
               <button onClick={() => setShowAddFeature(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                <X className="w-4 h-4 text-[#ffffff50]" />
+                <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowAddFeature(false)}>
@@ -391,7 +391,7 @@ export default function BusinessPage() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[16px] font-medium text-white">Log Monthly Income</h2>
               <button onClick={() => setShowLogIncome(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                <X className="w-4 h-4 text-[#ffffff50]" />
+                <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowLogIncome(false)}>

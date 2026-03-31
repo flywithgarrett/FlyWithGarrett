@@ -107,8 +107,8 @@ const chartColors: Record<string, string> = {
 };
 
 const chartTooltipStyle = {
-  backgroundColor: "#111114",
-  border: "1px solid rgba(255,255,255,0.07)",
+  backgroundColor: "#2c2c2e",
+  border: "none",
   borderRadius: "12px",
   fontSize: "12px",
 };
@@ -208,14 +208,14 @@ export default function AnalyticsPage() {
               <p className="text-stat">{formatNumber(p.stats?.followers ?? 0)}</p>
               <p className="text-micro mt-1">followers</p>
               {p.stats?.lastSynced && (
-                <p className="text-[10px] text-[#ffffff30] mt-2">
+                <p className="text-[10px] text-[rgba(235,235,245,0.2)] mt-2">
                   Synced {new Date(p.stats.lastSynced).toLocaleString("en-US", { hour: "numeric", minute: "2-digit" })}
                 </p>
               )}
               {p.topPosts.length > 0 && (
                 <div className="mt-3 pt-3 divider">
                   <p className="text-micro mb-1">Top recent content</p>
-                  <p className="text-[12px] text-[#ffffffcc] truncate">{p.topPosts[0].title}</p>
+                  <p className="text-[12px] text-[rgba(235,235,245,0.6)] truncate">{p.topPosts[0].title}</p>
                 </div>
               )}
             </div>
@@ -240,8 +240,8 @@ export default function AnalyticsPage() {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={growthData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="date" stroke="#ffffff30" tick={{ fontSize: 11 }} />
-              <YAxis stroke="#ffffff30" tick={{ fontSize: 11 }} />
+              <XAxis dataKey="date" stroke="rgba(235,235,245,0.2)" tick={{ fontSize: 11 }} />
+              <YAxis stroke="rgba(235,235,245,0.2)" tick={{ fontSize: 11 }} />
               <Tooltip contentStyle={chartTooltipStyle} />
               <Legend />
               {PLATFORMS.map((p) => (
@@ -258,8 +258,8 @@ export default function AnalyticsPage() {
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={pillarEngagement}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="pillar" stroke="#ffffff30" tick={{ fontSize: 11 }} />
-            <YAxis stroke="#ffffff30" tick={{ fontSize: 11 }} />
+            <XAxis dataKey="pillar" stroke="rgba(235,235,245,0.2)" tick={{ fontSize: 11 }} />
+            <YAxis stroke="rgba(235,235,245,0.2)" tick={{ fontSize: 11 }} />
             <Tooltip contentStyle={chartTooltipStyle} />
             <Bar dataKey="count" name="Posts" radius={[4, 4, 0, 0]}>
               {pillarEngagement.map((e, i) => (
@@ -280,7 +280,7 @@ export default function AnalyticsPage() {
         </div>
         {goals.length === 0 ? (
           <div className="card-static p-12 text-center">
-            <Target className="w-6 h-6 text-[#ffffff50] mx-auto mb-2" />
+            <Target className="w-6 h-6 text-[rgba(235,235,245,0.3)] mx-auto mb-2" />
             <p className="text-micro">No goals set yet.</p>
           </div>
         ) : (
@@ -297,7 +297,7 @@ export default function AnalyticsPage() {
                     <span>{formatNumber(goal.current)}</span>
                     <span>{formatNumber(goal.target)}</span>
                   </div>
-                  <div className="w-full bg-[rgba(255,255,255,0.06)] rounded-full h-1.5">
+                  <div className="w-full bg-[rgba(255,255,255,0.04)] rounded-full h-1.5">
                     <div className="h-1.5 rounded-full" style={{ width: `${progress}%`, backgroundColor: "#30d158" }} />
                   </div>
                 </div>
@@ -315,7 +315,7 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[16px] font-medium text-white">Log Platform Stats</h2>
               <button onClick={() => setShowLogStats(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                <X className="w-4 h-4 text-[#ffffff50]" />
+                <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowLogStats(false)}>
@@ -340,7 +340,7 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[16px] font-medium text-white">New Goal</h2>
               <button onClick={() => setShowAddGoal(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                <X className="w-4 h-4 text-[#ffffff50]" />
+                <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowAddGoal(false)}>
@@ -362,8 +362,8 @@ export default function AnalyticsPage() {
       {analysisOpen && activeAnalysis && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/60" onClick={() => setAnalysisOpen(false)} />
-          <div className="relative w-full max-w-[600px] bg-[#080809] border-l border-[rgba(255,255,255,0.07)] overflow-y-auto">
-            <div className="sticky top-0 bg-[#080809] border-b border-[rgba(255,255,255,0.07)] p-5 flex items-center justify-between z-10">
+          <div className="relative w-full max-w-[600px] bg-[#1c1c1e] border-l border-[transparent] overflow-y-auto">
+            <div className="sticky top-0 bg-[#1c1c1e] border-b border-[transparent] p-5 flex items-center justify-between z-10">
               <div className="flex items-center gap-3">
                 <Sparkles className="w-5 h-5" style={{ color: "#30d158" }} />
                 <div>
@@ -385,14 +385,14 @@ export default function AnalyticsPage() {
                   {activeAnalysis.overallScore}/10
                 </div>
                 <button onClick={() => setAnalysisOpen(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                  <X className="w-4 h-4 text-[#ffffff50]" />
+                  <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
                 </button>
               </div>
             </div>
 
             <div className="p-5 space-y-6">
               {/* Score Summary */}
-              <div className="rounded-lg bg-[rgba(255,255,255,0.03)] p-4">
+              <div className="rounded-lg bg-[rgba(255,255,255,0.04)] p-4">
                 <p className="text-body">{activeAnalysis.scoreSummary}</p>
               </div>
 
@@ -476,11 +476,11 @@ export default function AnalyticsPage() {
                           <span className={cn("text-[10px] px-1.5 py-0.5 rounded",
                             item.priority === "high" ? "text-[#ff453a]" :
                             item.priority === "medium" ? "text-[#ffd60a]" :
-                            "text-[#ffffff50]"
+                            "text-[rgba(235,235,245,0.3)]"
                           )} style={{
                             backgroundColor: item.priority === "high" ? "rgba(255,69,58,0.15)" :
                               item.priority === "medium" ? "rgba(255,214,10,0.15)" :
-                              "rgba(255,255,255,0.06)"
+                              "rgba(255,255,255,0.04)"
                           }}>{item.priority}</span>
                         </div>
                         <p className="text-micro">{item.rationale}</p>

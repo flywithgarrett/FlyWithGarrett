@@ -57,7 +57,7 @@ const platformIcons: Record<string, React.ComponentType<{ className?: string }>>
 };
 
 const statusColors: Record<CollabStatus, { bg: string; text: string }> = {
-  potential: { bg: "rgba(255,255,255,0.08)", text: "#ffffff50" },
+  potential: { bg: "rgba(255,255,255,0.08)", text: "rgba(235,235,245,0.3)" },
   outreach: { bg: "rgba(10,132,255,0.15)", text: "#0a84ff" },
   negotiating: { bg: "rgba(255,214,10,0.15)", text: "#ffd60a" },
   confirmed: { bg: "rgba(48,209,88,0.15)", text: "#30d158" },
@@ -79,7 +79,7 @@ export default function BrandPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("identity");
   const [showAddCollab, setShowAddCollab] = useState(false);
 
-  if (!brand) return <div className="text-[#ffffff50]">Loading brand data...</div>;
+  if (!brand) return <div className="text-[rgba(235,235,245,0.3)]">Loading brand data...</div>;
 
   return (
     <div className="space-y-6">
@@ -98,7 +98,7 @@ export default function BrandPage() {
               onClick={() => setActiveTab(tab.key)}
               className={cn(
                 "flex items-center gap-1.5 px-4 py-1.5 text-[13px] font-medium rounded-lg transition-colors",
-                activeTab === tab.key ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[#ffffff50] hover:text-white"
+                activeTab === tab.key ? "bg-[rgba(255,255,255,0.08)] text-white" : "text-[rgba(235,235,245,0.3)] hover:text-white"
               )}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -126,7 +126,7 @@ export default function BrandPage() {
                 <p className="text-micro mb-1">Tone</p>
                 <div className="flex flex-wrap gap-1.5">
                   {["Authentic", "Aspirational", "Approachable"].map((t) => (
-                    <span key={t} className="pill px-2.5 py-1 text-[12px] text-[#ffffffcc]">{t}</span>
+                    <span key={t} className="pill px-2.5 py-1 text-[12px] text-[rgba(235,235,245,0.6)]">{t}</span>
                   ))}
                 </div>
               </div>
@@ -151,7 +151,7 @@ export default function BrandPage() {
                 <p className="text-micro mb-2">Content Worlds</p>
                 <div className="flex flex-wrap gap-2">
                   {["The Flight Deck", "The Life", "The Build"].map((w) => (
-                    <span key={w} className="pill px-2.5 py-1 text-[12px] text-[#ffffffcc]">{w}</span>
+                    <span key={w} className="pill px-2.5 py-1 text-[12px] text-[rgba(235,235,245,0.6)]">{w}</span>
                   ))}
                 </div>
               </div>
@@ -166,7 +166,7 @@ export default function BrandPage() {
                 <div key={key} className="text-center">
                   <div className="w-full h-12 rounded-lg mb-1.5" style={{ backgroundColor: val.color }} />
                   <p className="text-xs font-medium text-white">{val.label}</p>
-                  <p className="text-[10px] text-[#ffffff50]">{val.color}</p>
+                  <p className="text-[10px] text-[rgba(235,235,245,0.3)]">{val.color}</p>
                 </div>
               ))}
             </div>
@@ -297,7 +297,7 @@ export default function BrandPage() {
 
           {collabs.length === 0 ? (
             <div className="card-static p-12 text-center">
-              <Handshake className="w-8 h-8 text-[#ffffff50] mx-auto mb-2" />
+              <Handshake className="w-8 h-8 text-[rgba(235,235,245,0.3)] mx-auto mb-2" />
               <p className="text-micro">No collaborations tracked yet.</p>
             </div>
           ) : (
@@ -327,7 +327,7 @@ export default function BrandPage() {
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-[16px] font-medium text-white">New Collaboration</h2>
                   <button onClick={() => setShowAddCollab(false)} className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded">
-                    <X className="w-4 h-4 text-[#ffffff50]" />
+                    <X className="w-4 h-4 text-[rgba(235,235,245,0.3)]" />
                   </button>
                 </div>
                 <Form method="post" className="space-y-4" onSubmit={() => setShowAddCollab(false)}>
