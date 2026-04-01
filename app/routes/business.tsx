@@ -80,14 +80,14 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 const featureStatusConfig: Record<FeatureStatus, { label: string; bg: string; text: string }> = {
-  backlog: { label: "Backlog", bg: "rgba(0,0,0,0.05)", text: "#86868b" },
+  backlog: { label: "Backlog", bg: "rgba(255,255,255,0.06)", text: "rgba(245,245,245,0.4)" },
   in_dev: { label: "In Dev", bg: "rgba(10,132,255,0.15)", text: "#0a84ff" },
   shipped: { label: "Shipped", bg: "rgba(48,209,88,0.15)", text: "#30d158" },
 };
 
 const chartTooltipStyle = {
-  backgroundColor: "#ffffff",
-  border: "1px solid rgba(0,0,0,0.06)",
+  backgroundColor: "#1e1e1e",
+  border: "1px solid rgba(255,255,255,0.06)",
   borderRadius: "12px",
   fontSize: "12px",
 };
@@ -135,7 +135,7 @@ export default function BusinessPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-1 rounded-[10px] bg-[rgba(0,0,0,0.03)] p-1 w-fit">
+      <div className="flex gap-1 rounded-[10px] bg-[rgba(255,255,255,0.04)] p-1 w-fit">
         {tabItems.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -144,7 +144,7 @@ export default function BusinessPage() {
               onClick={() => setActiveTab(tab.key)}
               className={cn(
                 "flex items-center gap-1.5 px-4 py-1.5 text-[13px] font-medium rounded-lg transition-colors",
-                activeTab === tab.key ? "bg-[rgba(0,0,0,0.05)] text-[#1d1d1f]" : "text-[#aeaeb2] hover:text-[#1d1d1f]"
+                activeTab === tab.key ? "bg-[rgba(255,255,255,0.06)] text-[#f5f5f5]" : "text-[rgba(245,245,245,0.3)] hover:text-[#f5f5f5]"
               )}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -165,10 +165,10 @@ export default function BusinessPage() {
             </div>
             <div className="space-y-2">
               {atlasProducts.map((product) => (
-                <div key={product.id} className="flex items-center gap-3 p-3 rounded-lg bg-[rgba(0,0,0,0.03)]">
+                <div key={product.id} className="flex items-center gap-3 p-3 rounded-lg bg-[rgba(255,255,255,0.04)]">
                   <div className="w-4 h-4 rounded-full" style={{ backgroundColor: product.color }} />
                   <div className="flex-1">
-                    <p className="text-[14px] font-medium text-[#1d1d1f]">{product.name}</p>
+                    <p className="text-[14px] font-medium text-[#f5f5f5]">{product.name}</p>
                     <p className="text-micro">{product.description}</p>
                   </div>
                   <span
@@ -198,9 +198,9 @@ export default function BusinessPage() {
             ) : (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={sortedAtlas}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                  <XAxis dataKey="recordedMonth" stroke="rgba(0,0,0,0.1)" tick={{ fontSize: 11 }} />
-                  <YAxis stroke="rgba(0,0,0,0.1)" tick={{ fontSize: 11 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <XAxis dataKey="recordedMonth" stroke="rgba(255,255,255,0.1)" tick={{ fontSize: 11 }} />
+                  <YAxis stroke="rgba(255,255,255,0.1)" tick={{ fontSize: 11 }} />
                   <Tooltip contentStyle={chartTooltipStyle} />
                   <Bar dataKey="revenue" name="Revenue" fill="#30d158" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -231,7 +231,7 @@ export default function BusinessPage() {
                     </span>
                     <span className="text-micro">({featuresByStatus[status].length})</span>
                   </div>
-                  <div className="space-y-2 min-h-[200px] p-2 rounded-lg bg-[rgba(0,0,0,0.03)] border border-[rgba(0,0,0,0.06)]">
+                  <div className="space-y-2 min-h-[200px] p-2 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)]">
                     {featuresByStatus[status].length === 0 ? (
                       <p className="text-micro text-center py-8">Empty</p>
                     ) : (
@@ -239,7 +239,7 @@ export default function BusinessPage() {
                         .sort((a, b) => a.priority - b.priority)
                         .map((feature) => (
                           <div key={feature.id} className="card-static p-3">
-                            <p className="text-sm font-medium text-[#1d1d1f]">{feature.title}</p>
+                            <p className="text-sm font-medium text-[#f5f5f5]">{feature.title}</p>
                             {feature.description && (
                               <p className="text-micro mt-1">{feature.description}</p>
                             )}
@@ -287,18 +287,18 @@ export default function BusinessPage() {
 
           {income.length === 0 ? (
             <div className="card-static p-12 text-center">
-              <DollarSign className="w-8 h-8 text-[#aeaeb2] mx-auto mb-2" />
+              <DollarSign className="w-8 h-8 text-[rgba(245,245,245,0.3)] mx-auto mb-2" />
               <p className="text-micro">No income data logged yet.</p>
             </div>
           ) : (
             <>
               <div className="card-static p-5 mb-6">
-                <h3 className="text-[14px] font-medium text-[#1d1d1f] mb-4">Monthly P&L</h3>
+                <h3 className="text-[14px] font-medium text-[#f5f5f5] mb-4">Monthly P&L</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={incomeData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="month" stroke="rgba(0,0,0,0.1)" tick={{ fontSize: 11 }} />
-                    <YAxis stroke="rgba(0,0,0,0.1)" tick={{ fontSize: 11 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <XAxis dataKey="month" stroke="rgba(255,255,255,0.1)" tick={{ fontSize: 11 }} />
+                    <YAxis stroke="rgba(255,255,255,0.1)" tick={{ fontSize: 11 }} />
                     <Tooltip contentStyle={chartTooltipStyle} />
                     <Legend />
                     <Bar dataKey="pilot" name="Pilot" fill="#0a84ff" stackId="income" />
@@ -335,12 +335,12 @@ export default function BusinessPage() {
       {/* Log Atlas Revenue Dialog */}
       {showLogRevenue && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setShowLogRevenue(false)} />
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowLogRevenue(false)} />
           <div className="relative w-full max-w-md card-static p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[16px] font-medium text-[#1d1d1f]">Log Atlas Revenue</h2>
-              <button onClick={() => setShowLogRevenue(false)} className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded">
-                <X className="w-4 h-4 text-[#aeaeb2]" />
+              <h2 className="text-[16px] font-medium text-[#f5f5f5]">Log Atlas Revenue</h2>
+              <button onClick={() => setShowLogRevenue(false)} className="p-1 hover:bg-[rgba(255,255,255,0.06)] rounded">
+                <X className="w-4 h-4 text-[rgba(245,245,245,0.3)]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowLogRevenue(false)}>
@@ -359,12 +359,12 @@ export default function BusinessPage() {
       {/* Add SkyWay Feature Dialog */}
       {showAddFeature && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setShowAddFeature(false)} />
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowAddFeature(false)} />
           <div className="relative w-full max-w-md card-static p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[16px] font-medium text-[#1d1d1f]">New SkyWay Feature</h2>
-              <button onClick={() => setShowAddFeature(false)} className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded">
-                <X className="w-4 h-4 text-[#aeaeb2]" />
+              <h2 className="text-[16px] font-medium text-[#f5f5f5]">New SkyWay Feature</h2>
+              <button onClick={() => setShowAddFeature(false)} className="p-1 hover:bg-[rgba(255,255,255,0.06)] rounded">
+                <X className="w-4 h-4 text-[rgba(245,245,245,0.3)]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowAddFeature(false)}>
@@ -386,12 +386,12 @@ export default function BusinessPage() {
       {/* Log Income Dialog */}
       {showLogIncome && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setShowLogIncome(false)} />
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowLogIncome(false)} />
           <div className="relative w-full max-w-md card-static p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[16px] font-medium text-[#1d1d1f]">Log Monthly Income</h2>
-              <button onClick={() => setShowLogIncome(false)} className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded">
-                <X className="w-4 h-4 text-[#aeaeb2]" />
+              <h2 className="text-[16px] font-medium text-[#f5f5f5]">Log Monthly Income</h2>
+              <button onClick={() => setShowLogIncome(false)} className="p-1 hover:bg-[rgba(255,255,255,0.06)] rounded">
+                <X className="w-4 h-4 text-[rgba(245,245,245,0.3)]" />
               </button>
             </div>
             <Form method="post" className="space-y-4" onSubmit={() => setShowLogIncome(false)}>

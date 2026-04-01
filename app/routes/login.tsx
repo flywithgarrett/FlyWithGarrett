@@ -19,24 +19,21 @@ export async function action({ request }: Route.ActionArgs) {
 export default function Login() {
   const actionData = useActionData<typeof action>();
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="w-full max-w-[340px]">
+    <div className="min-h-screen bg-[#141414] flex items-center justify-center p-4">
+      <div className="w-full max-w-[320px]">
         <div className="text-center mb-10">
-          <div className="w-14 h-14 rounded-[16px] bg-[#1d1d1f] flex items-center justify-center mx-auto mb-5">
-            <Plane className="w-6 h-6 text-white" />
-          </div>
-          <h1 className="text-title">FlyWithGarrett</h1>
-          <p className="text-micro mt-2">Creator OS</p>
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#F59E0B] flex items-center justify-center mx-auto mb-4 text-[16px] font-bold text-white">G</div>
+          <h1 className="text-[24px] font-light text-[#f5f5f5] tracking-tight">FlyWithGarrett</h1>
+          <p className="text-[11px] text-[rgba(245,245,245,0.2)] mt-1">Life OS</p>
         </div>
-        <Form method="post" className="space-y-4">
+        <Form method="post" className="space-y-3">
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#86868b]" />
-            <input type="password" name="password" placeholder="Enter password" className="input-field pl-10" autoFocus />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[rgba(245,245,245,0.2)]" />
+            <input type="password" name="password" placeholder="Password" className="input-field pl-9 h-[42px]" autoFocus />
           </div>
-          {actionData?.error && <p className="text-[13px] text-[#ff3b30]">{actionData.error}</p>}
-          <button type="submit" className="btn-primary w-full">Enter Command Center</button>
+          {actionData?.error && <p className="text-[12px] text-[#ef4444]">{actionData.error}</p>}
+          <button type="submit" className="btn-primary w-full h-[42px]">Enter</button>
         </Form>
-        <p className="text-[11px] text-[#d2d2d7] text-center mt-10">Living at altitude.</p>
       </div>
     </div>
   );

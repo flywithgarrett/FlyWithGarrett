@@ -143,7 +143,7 @@ export default function IntegrationsPage() {
       {/* Header */}
       <div>
         <p className="text-title">Integrations</p>
-        <p className="text-[14px] text-[#86868b] mt-1">
+        <p className="text-[14px] text-[rgba(245,245,245,0.55)] mt-1">
           Connect your accounts and services
         </p>
       </div>
@@ -155,10 +155,10 @@ export default function IntegrationsPage() {
             <Check className="w-5 h-5 text-[#34c759]" />
           </div>
           <div>
-            <p className="text-[15px] font-medium text-[#1d1d1f]">
+            <p className="text-[15px] font-medium text-[#f5f5f5]">
               {connectedCount} of {INTEGRATIONS.length} connected
             </p>
-            <p className="text-[12px] text-[#86868b]">
+            <p className="text-[12px] text-[rgba(245,245,245,0.55)]">
               Connect more services to unlock features
             </p>
           </div>
@@ -186,22 +186,22 @@ export default function IntegrationsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[14px] font-medium text-[#1d1d1f]">
+                    <p className="text-[14px] font-medium text-[#f5f5f5]">
                       {integration.name}
                     </p>
                     {integration.comingSoon && (
-                      <span className="pill text-[10px] !bg-[#f5f5f7] !text-[#aeaeb2]">
+                      <span className="pill text-[10px] !bg-[#1e1e1e] !text-[rgba(245,245,245,0.3)]">
                         Coming Soon
                       </span>
                     )}
                   </div>
-                  <p className="text-[12px] text-[#86868b] mt-0.5">
+                  <p className="text-[12px] text-[rgba(245,245,245,0.55)] mt-0.5">
                     {integration.description}
                   </p>
                   {isConnected && status?.lastSynced && (
                     <div className="flex items-center gap-1 mt-1.5">
-                      <Clock className="w-3 h-3 text-[#aeaeb2]" />
-                      <span className="text-[11px] text-[#aeaeb2]">
+                      <Clock className="w-3 h-3 text-[rgba(245,245,245,0.3)]" />
+                      <span className="text-[11px] text-[rgba(245,245,245,0.3)]">
                         Last synced{" "}
                         {new Date(status.lastSynced).toLocaleDateString(
                           "en-US",
@@ -213,7 +213,7 @@ export default function IntegrationsPage() {
                 </div>
                 <div className="shrink-0">
                   {integration.comingSoon ? (
-                    <span className="text-[12px] text-[#aeaeb2] px-3 py-1.5 rounded-full bg-[rgba(0,0,0,0.03)]">
+                    <span className="text-[12px] text-[rgba(245,245,245,0.3)] px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.04)]">
                       Unavailable
                     </span>
                   ) : isConnected ? (
@@ -230,7 +230,7 @@ export default function IntegrationsPage() {
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   ) : integration.name === "Anthropic AI" ? (
-                    <span className="text-[12px] text-[#aeaeb2] px-3 py-1.5 rounded-full bg-[rgba(0,0,0,0.03)]">
+                    <span className="text-[12px] text-[rgba(245,245,245,0.3)] px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.04)]">
                       Set env var
                     </span>
                   ) : null}
@@ -242,11 +242,11 @@ export default function IntegrationsPage() {
       </div>
 
       {/* Help Section */}
-      <div className="card-static !bg-[#f5f5f7]">
-        <p className="text-[14px] font-medium text-[#1d1d1f] mb-1">
+      <div className="card-static !bg-[#1e1e1e]">
+        <p className="text-[14px] font-medium text-[#f5f5f5] mb-1">
           Need help connecting?
         </p>
-        <p className="text-[13px] text-[#86868b] leading-relaxed">
+        <p className="text-[13px] text-[rgba(245,245,245,0.55)] leading-relaxed">
           Each integration requires authentication with the respective platform.
           Click "Connect" to begin the OAuth flow. For Anthropic AI, add your
           API key as the ANTHROPIC_API_KEY environment variable.

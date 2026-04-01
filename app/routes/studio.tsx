@@ -112,11 +112,11 @@ export default function StudioPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-[12px] bg-[rgba(0,0,0,0.03)] w-fit">
+      <div className="flex gap-1 p-1 rounded-[12px] bg-[rgba(255,255,255,0.04)] w-fit">
         {tabs.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key as typeof tab)}
             className={`flex items-center gap-1.5 px-3 py-[6px] rounded-[8px] text-[12px] font-medium transition-all ${
-              tab === t.key ? "bg-[rgba(0,0,0,0.05)] text-[#1d1d1f]" : "text-[#aeaeb2] hover:text-[#86868b]"
+              tab === t.key ? "bg-[rgba(255,255,255,0.06)] text-[#f5f5f5]" : "text-[rgba(245,245,245,0.3)] hover:text-[rgba(245,245,245,0.55)]"
             }`}>
             <t.icon className="w-3.5 h-3.5" />{t.label}
           </button>
@@ -135,10 +135,10 @@ export default function StudioPage() {
                 <button onClick={() => setExpandedPillar(isExpanded ? null : key)}
                   className="w-full flex items-start justify-between p-5 text-left">
                   <div>
-                    <p className="text-[15px] font-medium text-[#1d1d1f]">{p.label}</p>
-                    <p className="text-[12px] text-[#aeaeb2] mt-1">{p.description}</p>
+                    <p className="text-[15px] font-medium text-[#f5f5f5]">{p.label}</p>
+                    <p className="text-[12px] text-[rgba(245,245,245,0.3)] mt-1">{p.description}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      {p.platforms.map((pl) => { const I = platformIcons[pl]; return I ? <I key={pl} className="w-3.5 h-3.5 text-[#c7c7cc]" /> : null; })}
+                      {p.platforms.map((pl) => { const I = platformIcons[pl]; return I ? <I key={pl} className="w-3.5 h-3.5 text-[rgba(245,245,245,0.2)]" /> : null; })}
                       <span className="text-micro ml-1">Series: {p.series}</span>
                       <span className="text-micro">{hooks.length} hooks</span>
                     </div>
@@ -149,8 +149,8 @@ export default function StudioPage() {
                   <div className="px-5 pb-5 space-y-2">
                     <div className="divider mb-3" />
                     {hooks.map((hook, i) => (
-                      <div key={i} className="flex items-center justify-between gap-3 p-3 rounded-[10px] bg-[#e8e8ed] hover:bg-[#d1d1d6] transition-colors group">
-                        <p className="text-[13px] text-[#86868b] flex-1">"{hook}"</p>
+                      <div key={i} className="flex items-center justify-between gap-3 p-3 rounded-[10px] bg-[#262626] hover:bg-[#333333] transition-colors group">
+                        <p className="text-[13px] text-[rgba(245,245,245,0.55)] flex-1">"{hook}"</p>
                         <div className="flex gap-1.5 shrink-0">
                           <button onClick={() => openScriptWriter(hook, key)}
                             className="btn-primary text-[11px] py-1 px-3">
@@ -191,8 +191,8 @@ export default function StudioPage() {
           </div>
           {filteredIdeas.length === 0 ? (
             <div className="card-static p-12 text-center">
-              <Lightbulb className="w-6 h-6 text-[#d1d1d6] mx-auto mb-2" />
-              <p className="text-[13px] text-[#aeaeb2]">No ideas yet. Save hooks from Pillars or add one above.</p>
+              <Lightbulb className="w-6 h-6 text-[rgba(245,245,245,0.15)] mx-auto mb-2" />
+              <p className="text-[13px] text-[rgba(245,245,245,0.3)]">No ideas yet. Save hooks from Pillars or add one above.</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -200,22 +200,22 @@ export default function StudioPage() {
                 <div key={idea.id} className="card-static p-4 !rounded-[16px]" style={{ borderLeft: `2px solid ${PILLAR_CONFIG[idea.pillar]?.color || "#fff"}30` }}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-[#1d1d1f] truncate">{idea.title}</p>
+                      <p className="text-[13px] font-medium text-[#f5f5f5] truncate">{idea.title}</p>
                       <p className="text-[11px] mt-1" style={{ color: PILLAR_CONFIG[idea.pillar]?.color }}>{PILLAR_CONFIG[idea.pillar]?.label}</p>
                     </div>
                     <div className="flex gap-1 shrink-0">
                       <button onClick={() => openScriptWriter(idea.hookDraft || idea.title, idea.pillar)}
-                        className="p-1 hover:bg-[rgba(0,0,0,0.04)] rounded">
-                        <Sparkles className="w-3 h-3 text-[#c7c7cc]" />
+                        className="p-1 hover:bg-[rgba(255,255,255,0.06)] rounded">
+                        <Sparkles className="w-3 h-3 text-[rgba(245,245,245,0.2)]" />
                       </button>
                       <Form method="post">
                         <input type="hidden" name="intent" value="delete-idea" />
                         <input type="hidden" name="id" value={idea.id} />
-                        <button type="submit" className="p-1 hover:bg-[rgba(0,0,0,0.04)] rounded"><Trash2 className="w-3 h-3 text-[#d1d1d6]" /></button>
+                        <button type="submit" className="p-1 hover:bg-[rgba(255,255,255,0.06)] rounded"><Trash2 className="w-3 h-3 text-[rgba(245,245,245,0.15)]" /></button>
                       </Form>
                     </div>
                   </div>
-                  {idea.hookDraft && idea.hookDraft !== idea.title && <p className="text-[12px] text-[#aeaeb2] mt-2 line-clamp-2">{idea.hookDraft}</p>}
+                  {idea.hookDraft && idea.hookDraft !== idea.title && <p className="text-[12px] text-[rgba(245,245,245,0.3)] mt-2 line-clamp-2">{idea.hookDraft}</p>}
                 </div>
               ))}
             </div>
@@ -228,9 +228,9 @@ export default function StudioPage() {
         <div className="grid md:grid-cols-2 gap-3">
           {series.map((s) => (
             <div key={s.id} className="card-static p-5 !rounded-[16px]" style={{ borderLeft: `2px solid ${PILLAR_CONFIG[s.pillar]?.color || "#fff"}30` }}>
-              <p className="text-[14px] font-medium text-[#1d1d1f]">{s.name}</p>
+              <p className="text-[14px] font-medium text-[#f5f5f5]">{s.name}</p>
               <p className="text-[11px] mt-0.5" style={{ color: PILLAR_CONFIG[s.pillar]?.color }}>{PILLAR_CONFIG[s.pillar]?.label}</p>
-              <p className="text-[12px] text-[#aeaeb2] mt-2">{s.description}</p>
+              <p className="text-[12px] text-[rgba(245,245,245,0.3)] mt-2">{s.description}</p>
               <p className="text-micro mt-3">Episodes: {s.episodeCount}</p>
             </div>
           ))}
@@ -240,8 +240,8 @@ export default function StudioPage() {
       {/* SCRIPT WRITER MODAL */}
       {scriptModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => !scriptModal.loading && setScriptModal(null)}>
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm fade-in" />
-          <div className="relative w-full max-w-[700px] max-h-[85vh] overflow-y-auto bg-white rounded-[20px] p-8 slide-in"
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm fade-in" />
+          <div className="relative w-full max-w-[700px] max-h-[85vh] overflow-y-auto bg-[#1e1e1e] rounded-[20px] p-8 slide-in"
             onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="flex items-start justify-between mb-6">
@@ -256,8 +256,8 @@ export default function StudioPage() {
                   <span className="pill">TikTok / Reel</span>
                 </div>
               </div>
-              <button onClick={() => setScriptModal(null)} className="p-1 hover:bg-[rgba(0,0,0,0.04)] rounded-lg ml-4">
-                <X className="w-5 h-5 text-[#aeaeb2]" />
+              <button onClick={() => setScriptModal(null)} className="p-1 hover:bg-[rgba(255,255,255,0.06)] rounded-lg ml-4">
+                <X className="w-5 h-5 text-[rgba(245,245,245,0.3)]" />
               </button>
             </div>
 
@@ -265,11 +265,11 @@ export default function StudioPage() {
             {scriptModal.loading && (
               <div className="py-16 text-center">
                 <div className="flex items-center justify-center gap-1 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-black/20 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-2 h-2 rounded-full bg-black/20 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-2 h-2 rounded-full bg-black/20 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <div className="w-2 h-2 rounded-full bg-black/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <div className="w-2 h-2 rounded-full bg-black/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <div className="w-2 h-2 rounded-full bg-black/50 animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
-                <p className="text-[14px] text-[#1d1d1f]">Writing your script...</p>
+                <p className="text-[14px] text-[#f5f5f5]">Writing your script...</p>
                 <p className="text-micro mt-1">This takes 5-10 seconds</p>
               </div>
             )}
@@ -290,8 +290,8 @@ export default function StudioPage() {
                     <p className="text-[12px] text-[#ffd60a]">Add your ANTHROPIC_API_KEY in Vercel for real AI-generated scripts</p>
                   </div>
                 )}
-                <div className="bg-[#f5f5f7] rounded-[16px] p-6 mb-6">
-                  <div className="whitespace-pre-wrap text-[13px] leading-[1.8] text-[#3a3a3c]"
+                <div className="bg-[#1e1e1e] rounded-[16px] p-6 mb-6">
+                  <div className="whitespace-pre-wrap text-[13px] leading-[1.8] text-[rgba(245,245,245,0.55)]"
                     dangerouslySetInnerHTML={{
                       __html: scriptModal.script
                         .replace(/(HOOK.*?):/g, '<span class="text-[#ff9f0a] font-semibold text-[11px] uppercase tracking-wider">$1:</span>')

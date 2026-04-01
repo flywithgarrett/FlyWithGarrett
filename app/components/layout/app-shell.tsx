@@ -4,14 +4,14 @@ import { Toaster } from "sonner";
 
 export function AppShell() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#141414]">
       <Sidebar />
-      <main className="lg:ml-[240px] min-h-screen">
-        <div className="p-5 lg:p-10 pt-16 lg:pt-10 max-w-[1200px]">
+      <main className="lg:ml-[220px] min-h-screen">
+        <div className="p-5 lg:p-8 pt-16 lg:pt-8 max-w-[1100px]">
           <Outlet />
         </div>
       </main>
-      <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: "#ffffff", border: "1px solid rgba(0,0,0,0.06)", color: "#1d1d1f", fontSize: "13px", borderRadius: "14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" } }} />
+      <Toaster theme="dark" position="bottom-right" toastOptions={{ style: { background: "#1e1e1e", border: "1px solid rgba(255,255,255,0.08)", color: "#f5f5f5", fontSize: "13px", borderRadius: "12px" } }} />
     </div>
   );
 }

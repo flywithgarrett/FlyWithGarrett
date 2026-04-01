@@ -12,9 +12,9 @@ export const links: Route.LinksFunction = () => [
 
 export function meta() {
   return [
-    { title: "FlyWithGarrett — Creator OS" },
-    { name: "description", content: "Personal creator dashboard for @flywithgarrett" },
-    { name: "theme-color", content: "#ffffff" },
+    { title: "FlyWithGarrett — Life OS" },
+    { name: "description", content: "Personal life operating system for @flywithgarrett" },
+    { name: "theme-color", content: "#141414" },
   ];
 }
 
@@ -36,8 +36,6 @@ export default function App() { return <Outlet />; }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!", details = "An unexpected error occurred.";
-  let stack: string | undefined;
-  if (isRouteErrorResponse(error)) { message = error.status === 404 ? "404" : "Error"; details = error.status === 404 ? "Page not found." : error.statusText || details; }
-  else if (import.meta.env.DEV && error instanceof Error) { details = error.message; stack = error.stack; }
-  return (<main className="pt-16 p-4 container mx-auto"><h1 className="text-title">{message}</h1><p className="text-body mt-2">{details}</p>{stack && <pre className="w-full p-4 overflow-x-auto mt-4 text-xs opacity-50"><code>{stack}</code></pre>}</main>);
+  if (isRouteErrorResponse(error)) { message = error.status === 404 ? "404" : "Error"; details = error.statusText || details; }
+  return (<main className="pt-16 p-4 container mx-auto"><h1 className="text-title">{message}</h1><p className="text-body mt-2">{details}</p></main>);
 }

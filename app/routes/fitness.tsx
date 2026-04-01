@@ -149,7 +149,7 @@ export default function FitnessPage() {
       {/* Header */}
       <div>
         <p className="text-title">Fitness & Performance</p>
-        <p className="text-[14px] text-[#86868b] mt-1">
+        <p className="text-[14px] text-[rgba(245,245,245,0.55)] mt-1">
           Weekly training plan, supplements & biometrics
         </p>
       </div>
@@ -157,17 +157,17 @@ export default function FitnessPage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-3">
         <div className="card-static text-center">
-          <p className="text-micro text-[#86868b]">Workouts This Week</p>
+          <p className="text-micro text-[rgba(245,245,245,0.55)]">Workouts This Week</p>
           <p className="text-stat mt-1">{thisWeekLogs.length}/6</p>
         </div>
         <div className="card-static text-center">
-          <p className="text-micro text-[#86868b]">Weight</p>
+          <p className="text-micro text-[rgba(245,245,245,0.55)]">Weight</p>
           <p className="text-stat-sm mt-1">
             {latestBiometric ? `${latestBiometric.weight} lbs` : "—"}
           </p>
         </div>
         <div className="card-static text-center">
-          <p className="text-micro text-[#86868b]">Energy</p>
+          <p className="text-micro text-[rgba(245,245,245,0.55)]">Energy</p>
           <p className="text-stat-sm mt-1">
             {latestBiometric ? `${latestBiometric.energy}/10` : "—"}
           </p>
@@ -194,7 +194,7 @@ export default function FitnessPage() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[14px] font-medium text-[#1d1d1f]">
+                    <p className="text-[14px] font-medium text-[#f5f5f5]">
                       {day.day}
                     </p>
                     <span
@@ -208,10 +208,10 @@ export default function FitnessPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-3 mt-0.5">
-                    <span className="text-[12px] text-[#86868b]">
+                    <span className="text-[12px] text-[rgba(245,245,245,0.55)]">
                       {day.duration}
                     </span>
-                    <span className="text-[12px] text-[#aeaeb2]">
+                    <span className="text-[12px] text-[rgba(245,245,245,0.3)]">
                       {day.muscles}
                     </span>
                   </div>
@@ -262,7 +262,7 @@ export default function FitnessPage() {
                       style={{ color: stack.color }}
                     />
                   </div>
-                  <p className="text-[14px] font-medium text-[#1d1d1f]">
+                  <p className="text-[14px] font-medium text-[#f5f5f5]">
                     {stack.time}
                   </p>
                 </div>
@@ -270,7 +270,7 @@ export default function FitnessPage() {
                   {stack.items.map((item) => (
                     <div
                       key={item}
-                      className="flex items-center gap-2 text-[13px] text-[#3a3a3c]"
+                      className="flex items-center gap-2 text-[13px] text-[rgba(245,245,245,0.55)]"
                     >
                       <span
                         className="w-1.5 h-1.5 rounded-full shrink-0"
@@ -311,7 +311,7 @@ export default function FitnessPage() {
           >
             <input type="hidden" name="intent" value="log-biometric" />
             <div>
-              <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
+              <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
                 Date
               </label>
               <input
@@ -324,7 +324,7 @@ export default function FitnessPage() {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
+                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
                   <Scale className="w-3 h-3 inline mr-1" />
                   Weight (lbs)
                 </label>
@@ -337,7 +337,7 @@ export default function FitnessPage() {
                 />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
+                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
                   <BedDouble className="w-3 h-3 inline mr-1" />
                   Sleep (hrs)
                 </label>
@@ -350,7 +350,7 @@ export default function FitnessPage() {
                 />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
+                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
                   <Battery className="w-3 h-3 inline mr-1" />
                   Energy (1-10)
                 </label>
@@ -374,9 +374,9 @@ export default function FitnessPage() {
         <div className="space-y-2">
           {biometrics.length === 0 ? (
             <div className="card-static text-center py-8">
-              <Scale className="w-8 h-8 text-[#aeaeb2] mx-auto mb-2" />
-              <p className="text-[14px] text-[#86868b]">No biometric data yet</p>
-              <p className="text-[12px] text-[#aeaeb2] mt-1">
+              <Scale className="w-8 h-8 text-[rgba(245,245,245,0.3)] mx-auto mb-2" />
+              <p className="text-[14px] text-[rgba(245,245,245,0.55)]">No biometric data yet</p>
+              <p className="text-[12px] text-[rgba(245,245,245,0.3)] mt-1">
                 Log your weight, sleep & energy above
               </p>
             </div>
@@ -390,7 +390,7 @@ export default function FitnessPage() {
                   className="card-static flex items-center gap-4"
                 >
                   <div className="flex-1">
-                    <p className="text-[13px] font-medium text-[#1d1d1f]">
+                    <p className="text-[13px] font-medium text-[#f5f5f5]">
                       {new Date(entry.date + "T12:00:00").toLocaleDateString(
                         "en-US",
                         { weekday: "short", month: "short", day: "numeric" }
@@ -400,23 +400,23 @@ export default function FitnessPage() {
                   <div className="flex items-center gap-4">
                     {entry.weight > 0 && (
                       <div className="text-center">
-                        <p className="text-[11px] text-[#aeaeb2]">Weight</p>
-                        <p className="text-[13px] font-medium text-[#1d1d1f]">
+                        <p className="text-[11px] text-[rgba(245,245,245,0.3)]">Weight</p>
+                        <p className="text-[13px] font-medium text-[#f5f5f5]">
                           {entry.weight}
                         </p>
                       </div>
                     )}
                     {entry.sleepHours > 0 && (
                       <div className="text-center">
-                        <p className="text-[11px] text-[#aeaeb2]">Sleep</p>
-                        <p className="text-[13px] font-medium text-[#1d1d1f]">
+                        <p className="text-[11px] text-[rgba(245,245,245,0.3)]">Sleep</p>
+                        <p className="text-[13px] font-medium text-[#f5f5f5]">
                           {entry.sleepHours}h
                         </p>
                       </div>
                     )}
                     <div className="text-center">
-                      <p className="text-[11px] text-[#aeaeb2]">Energy</p>
-                      <p className="text-[13px] font-medium text-[#1d1d1f]">
+                      <p className="text-[11px] text-[rgba(245,245,245,0.3)]">Energy</p>
+                      <p className="text-[13px] font-medium text-[#f5f5f5]">
                         {entry.energy}/10
                       </p>
                     </div>
