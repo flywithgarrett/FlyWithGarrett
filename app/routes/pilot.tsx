@@ -119,28 +119,28 @@ export default function PilotSchedule() {
       {/* Header */}
       <div>
         <p className="text-title">Flight Schedule</p>
-        <p className="text-[14px] text-[rgba(245,245,245,0.55)] mt-1">Track your monthly flying schedule</p>
+        <p className="text-[14px] text-[#86868b] mt-1">Track your monthly flying schedule</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="card-static">
-          <p className="text-micro text-[rgba(245,245,245,0.55)]">Days Off This Month</p>
+          <p className="text-micro text-[#86868b]">Days Off This Month</p>
           <p className="text-stat mt-1">{daysOff}</p>
         </div>
         <div className="card-static">
-          <p className="text-micro text-[rgba(245,245,245,0.55)]">Next Trip</p>
+          <p className="text-micro text-[#86868b]">Next Trip</p>
           {nextTrip ? (
             <div className="mt-1">
-              <p className="text-[15px] font-semibold text-[#f5f5f5]">
+              <p className="text-[15px] font-semibold text-[#1d1d1f]">
                 {nextTrip.departure} → {nextTrip.destination}
               </p>
-              <p className="text-[12px] text-[rgba(245,245,245,0.55)]">
+              <p className="text-[12px] text-[#86868b]">
                 {new Date(nextTrip.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </p>
             </div>
           ) : (
-            <p className="text-[14px] text-[rgba(245,245,245,0.3)] mt-1">No upcoming trips</p>
+            <p className="text-[14px] text-[#aeaeb2] mt-1">No upcoming trips</p>
           )}
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function PilotSchedule() {
         {Object.entries(TYPE_COLORS).map(([type, color]) => (
           <div key={type} className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-[12px] text-[rgba(245,245,245,0.55)]">{type}</span>
+            <span className="text-[12px] text-[#86868b]">{type}</span>
           </div>
         ))}
       </div>
@@ -170,7 +170,7 @@ export default function PilotSchedule() {
         {/* Day Headers */}
         <div className="grid grid-cols-7 gap-1 mb-1">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <div key={d} className="text-center text-[11px] font-medium text-[rgba(245,245,245,0.3)] py-1">
+            <div key={d} className="text-center text-[11px] font-medium text-[#aeaeb2] py-1">
               {d}
             </div>
           ))}
@@ -192,10 +192,10 @@ export default function PilotSchedule() {
               <div
                 key={day}
                 className={`h-16 rounded-[10px] p-1 ${
-                  isToday ? "bg-[#007aff10] ring-1 ring-[#007aff30]" : "bg-[#1e1e1e]"
+                  isToday ? "bg-[#007aff10] ring-1 ring-[#007aff30]" : "bg-[#f5f5f7]"
                 }`}
               >
-                <p className={`text-[11px] font-medium ${isToday ? "text-[#007aff]" : "text-[#f5f5f5]"}`}>
+                <p className={`text-[11px] font-medium ${isToday ? "text-[#007aff]" : "text-[#1d1d1f]"}`}>
                   {day}
                 </p>
                 <div className="flex flex-wrap gap-0.5 mt-0.5">
@@ -230,12 +230,12 @@ export default function PilotSchedule() {
             <input type="hidden" name="intent" value="add-entry" />
 
             <div>
-              <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">Date</label>
+              <label className="text-[12px] font-medium text-[#86868b] mb-1 block">Date</label>
               <input type="date" name="date" required className="input-field" />
             </div>
 
             <div>
-              <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">Type</label>
+              <label className="text-[12px] font-medium text-[#86868b] mb-1 block">Type</label>
               <div className="flex flex-wrap gap-2">
                 {(["Line Flying", "Reserve", "Day Off", "Training", "Vacation"] as const).map((t) => (
                   <button
@@ -244,7 +244,7 @@ export default function PilotSchedule() {
                     onClick={() => setSelectedType(t)}
                     className={`pill text-[12px] ${
                       selectedType === t
-                        ? "!bg-[#262626] !text-[#f5f5f5]"
+                        ? "!bg-[#e8e8ed] !text-[#1d1d1f]"
                         : ""
                     }`}
                   >
@@ -261,26 +261,26 @@ export default function PilotSchedule() {
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">Departure City</label>
+                    <label className="text-[12px] font-medium text-[#86868b] mb-1 block">Departure City</label>
                     <input type="text" name="departure" placeholder="e.g. JFK" className="input-field" />
                   </div>
                   <div>
-                    <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">Destination</label>
+                    <label className="text-[12px] font-medium text-[#86868b] mb-1 block">Destination</label>
                     <input type="text" name="destination" placeholder="e.g. LAX" className="input-field" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">Departure Time</label>
+                    <label className="text-[12px] font-medium text-[#86868b] mb-1 block">Departure Time</label>
                     <input type="time" name="departureTime" className="input-field" />
                   </div>
                   <div>
-                    <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">Return Time</label>
+                    <label className="text-[12px] font-medium text-[#86868b] mb-1 block">Return Time</label>
                     <input type="time" name="returnTime" className="input-field" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">Layover City</label>
+                  <label className="text-[12px] font-medium text-[#86868b] mb-1 block">Layover City</label>
                   <input type="text" name="layoverCity" placeholder="Optional" className="input-field" />
                 </div>
               </div>
@@ -290,14 +290,14 @@ export default function PilotSchedule() {
             {selectedType === "Reserve" && (
               <div className="space-y-3">
                 <div>
-                  <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">Reserve Type</label>
+                  <label className="text-[12px] font-medium text-[#86868b] mb-1 block">Reserve Type</label>
                   <select name="reserveType" className="input-field">
                     <option value="Short Call">Short Call</option>
                     <option value="Long Call">Long Call</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">Window (e.g. 05:00-17:00)</label>
+                  <label className="text-[12px] font-medium text-[#86868b] mb-1 block">Window (e.g. 05:00-17:00)</label>
                   <input type="text" name="reserveWindow" placeholder="05:00-17:00" className="input-field" />
                 </div>
               </div>
@@ -321,8 +321,8 @@ export default function PilotSchedule() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[14px] font-medium text-[#f5f5f5]">{entry.type}</p>
-                    <span className="text-[12px] text-[rgba(245,245,245,0.3)]">
+                    <p className="text-[14px] font-medium text-[#1d1d1f]">{entry.type}</p>
+                    <span className="text-[12px] text-[#aeaeb2]">
                       {new Date(entry.date + "T12:00:00").toLocaleDateString("en-US", {
                         weekday: "short",
                         month: "short",
@@ -332,15 +332,15 @@ export default function PilotSchedule() {
                   </div>
                   {entry.type === "Line Flying" && entry.departure && (
                     <div className="flex items-center gap-2 mt-0.5">
-                      <MapPin className="w-3 h-3 text-[rgba(245,245,245,0.55)]" />
-                      <span className="text-[12px] text-[rgba(245,245,245,0.55)]">
+                      <MapPin className="w-3 h-3 text-[#86868b]" />
+                      <span className="text-[12px] text-[#86868b]">
                         {entry.departure} → {entry.destination}
                         {entry.layoverCity ? ` (via ${entry.layoverCity})` : ""}
                       </span>
                       {entry.departureTime && (
                         <>
-                          <Clock className="w-3 h-3 text-[rgba(245,245,245,0.55)] ml-2" />
-                          <span className="text-[12px] text-[rgba(245,245,245,0.55)]">
+                          <Clock className="w-3 h-3 text-[#86868b] ml-2" />
+                          <span className="text-[12px] text-[#86868b]">
                             {entry.departureTime} - {entry.returnTime}
                           </span>
                         </>
@@ -348,7 +348,7 @@ export default function PilotSchedule() {
                     </div>
                   )}
                   {entry.type === "Reserve" && entry.reserveType && (
-                    <p className="text-[12px] text-[rgba(245,245,245,0.55)] mt-0.5">
+                    <p className="text-[12px] text-[#86868b] mt-0.5">
                       {entry.reserveType} · {entry.reserveWindow}
                     </p>
                   )}
@@ -356,7 +356,7 @@ export default function PilotSchedule() {
                 <Form method="post">
                   <input type="hidden" name="intent" value="delete-entry" />
                   <input type="hidden" name="id" value={entry.id} />
-                  <button type="submit" className="btn-ghost p-1.5 text-[rgba(245,245,245,0.3)] hover:text-[#ff3b30]">
+                  <button type="submit" className="btn-ghost p-1.5 text-[#aeaeb2] hover:text-[#ff3b30]">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </Form>
@@ -364,9 +364,9 @@ export default function PilotSchedule() {
             ))}
           {monthEntries.length === 0 && (
             <div className="card-static text-center py-8">
-              <Calendar className="w-8 h-8 text-[rgba(245,245,245,0.3)] mx-auto mb-2" />
-              <p className="text-[14px] text-[rgba(245,245,245,0.55)]">No entries for {monthLabel}</p>
-              <p className="text-[12px] text-[rgba(245,245,245,0.3)] mt-1">Add your schedule above</p>
+              <Calendar className="w-8 h-8 text-[#aeaeb2] mx-auto mb-2" />
+              <p className="text-[14px] text-[#86868b]">No entries for {monthLabel}</p>
+              <p className="text-[12px] text-[#aeaeb2] mt-1">Add your schedule above</p>
             </div>
           )}
         </div>

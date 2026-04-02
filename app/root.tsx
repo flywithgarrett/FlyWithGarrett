@@ -12,9 +12,9 @@ export const links: Route.LinksFunction = () => [
 
 export function meta() {
   return [
-    { title: "FlyWithGarrett — Life OS" },
+    { title: "FlyWithGarrett Life OS" },
     { name: "description", content: "Personal life operating system for @flywithgarrett" },
-    { name: "theme-color", content: "#141414" },
+    { name: "theme-color", content: "#ffffff" },
   ];
 }
 

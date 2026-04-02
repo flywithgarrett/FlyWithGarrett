@@ -60,14 +60,14 @@ const DEFAULT_TASKS: AtlasTask[] = [
 ];
 
 const TASK_COLUMNS: { key: AtlasTask["status"]; label: string; color: string }[] = [
-  { key: "todo", label: "To Do", color: "rgba(245,245,245,0.4)" },
+  { key: "todo", label: "To Do", color: "#86868b" },
   { key: "in_progress", label: "In Progress", color: "#007aff" },
   { key: "done", label: "Done", color: "#34c759" },
 ];
 
 const chartTooltipStyle = {
-  backgroundColor: "#1e1e1e",
-  border: "1px solid rgba(255,255,255,0.06)",
+  backgroundColor: "#ffffff",
+  border: "1px solid rgba(0,0,0,0.06)",
   borderRadius: "12px",
   fontSize: "12px",
 };
@@ -185,7 +185,7 @@ export default function AtlasPage() {
       {/* Header */}
       <div>
         <p className="text-title">Atlas Hydration</p>
-        <p className="text-[14px] text-[rgba(245,245,245,0.55)] mt-1">
+        <p className="text-[14px] text-[#86868b] mt-1">
           Command center for Atlas Hydration Co.
         </p>
       </div>
@@ -193,17 +193,17 @@ export default function AtlasPage() {
       {/* Top Metrics */}
       <div className="grid grid-cols-3 gap-3">
         <div className="card-static text-center">
-          <p className="text-micro text-[rgba(245,245,245,0.55)]">Revenue This Month</p>
+          <p className="text-micro text-[#86868b]">Revenue This Month</p>
           <p className="text-stat mt-1" style={{ color: "#34c759" }}>
             {latestMetric ? formatCurrency(latestMetric.revenue) : "$0"}
           </p>
         </div>
         <div className="card-static text-center">
-          <p className="text-micro text-[rgba(245,245,245,0.55)]">Units Sold</p>
+          <p className="text-micro text-[#86868b]">Units Sold</p>
           <p className="text-stat mt-1">{latestMetric?.unitsSold ?? 0}</p>
         </div>
         <div className="card-static text-center">
-          <p className="text-micro text-[rgba(245,245,245,0.55)]">Best Selling Flavor</p>
+          <p className="text-micro text-[#86868b]">Best Selling Flavor</p>
           <p className="text-stat-sm mt-1">
             {latestMetric?.bestFlavor || "—"}
           </p>
@@ -221,7 +221,7 @@ export default function AtlasPage() {
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: product.color }}
                 />
-                <p className="text-[14px] font-medium text-[#f5f5f5]">
+                <p className="text-[14px] font-medium text-[#1d1d1f]">
                   {product.name}
                 </p>
               </div>
@@ -265,7 +265,7 @@ export default function AtlasPage() {
             <input type="hidden" name="intent" value="log-metric" />
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Month
                 </label>
                 <input
@@ -276,7 +276,7 @@ export default function AtlasPage() {
                 />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Revenue ($)
                 </label>
                 <input
@@ -290,7 +290,7 @@ export default function AtlasPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Units Sold
                 </label>
                 <input
@@ -301,7 +301,7 @@ export default function AtlasPage() {
                 />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Best Selling Flavor
                 </label>
                 <select name="bestFlavor" className="input-field">
@@ -323,23 +323,23 @@ export default function AtlasPage() {
         <div className="card-static">
           {sortedMetrics.length === 0 ? (
             <div className="text-center py-8">
-              <DollarSign className="w-8 h-8 text-[rgba(245,245,245,0.3)] mx-auto mb-2" />
-              <p className="text-[14px] text-[rgba(245,245,245,0.55)]">No revenue data yet</p>
+              <DollarSign className="w-8 h-8 text-[#aeaeb2] mx-auto mb-2" />
+              <p className="text-[14px] text-[#86868b]">No revenue data yet</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={sortedMetrics}>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="rgba(255,255,255,0.06)"
+                  stroke="rgba(0,0,0,0.06)"
                 />
                 <XAxis
                   dataKey="recordedMonth"
-                  stroke="rgba(255,255,255,0.1)"
+                  stroke="rgba(0,0,0,0.1)"
                   tick={{ fontSize: 11 }}
                 />
                 <YAxis
-                  stroke="rgba(255,255,255,0.1)"
+                  stroke="rgba(0,0,0,0.1)"
                   tick={{ fontSize: 11 }}
                 />
                 <Tooltip contentStyle={chartTooltipStyle} />
@@ -409,13 +409,13 @@ export default function AtlasPage() {
                   ({tasksByStatus(col.key).length})
                 </span>
               </div>
-              <div className="space-y-2 min-h-[120px] p-2 rounded-[14px] bg-[rgba(255,255,255,0.04)]">
+              <div className="space-y-2 min-h-[120px] p-2 rounded-[14px] bg-[rgba(0,0,0,0.03)]">
                 {tasksByStatus(col.key).length === 0 ? (
                   <p className="text-micro text-center py-6">No tasks</p>
                 ) : (
                   tasksByStatus(col.key).map((task) => (
                     <div key={task.id} className="card-static !p-3">
-                      <p className="text-[13px] font-medium text-[#f5f5f5]">
+                      <p className="text-[13px] font-medium text-[#1d1d1f]">
                         {task.title}
                       </p>
                       <div className="flex gap-1 mt-2">
@@ -470,7 +470,7 @@ export default function AtlasPage() {
                           <input type="hidden" name="id" value={task.id} />
                           <button
                             type="submit"
-                            className="btn-ghost h-6 px-1.5 text-[rgba(245,245,245,0.3)] hover:text-[#ff3b30]"
+                            className="btn-ghost h-6 px-1.5 text-[#aeaeb2] hover:text-[#ff3b30]"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -511,7 +511,7 @@ export default function AtlasPage() {
             <input type="hidden" name="intent" value="log-content-sale" />
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Video Title
                 </label>
                 <input
@@ -523,7 +523,7 @@ export default function AtlasPage() {
                 />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Platform
                 </label>
                 <select name="platform" className="input-field">
@@ -535,7 +535,7 @@ export default function AtlasPage() {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Clicks
                 </label>
                 <input
@@ -546,7 +546,7 @@ export default function AtlasPage() {
                 />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Sales
                 </label>
                 <input
@@ -557,7 +557,7 @@ export default function AtlasPage() {
                 />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Date
                 </label>
                 <input type="date" name="date" required className="input-field" />
@@ -572,11 +572,11 @@ export default function AtlasPage() {
         <div className="space-y-2">
           {contentSales.length === 0 ? (
             <div className="card-static text-center py-8">
-              <Video className="w-8 h-8 text-[rgba(245,245,245,0.3)] mx-auto mb-2" />
-              <p className="text-[14px] text-[rgba(245,245,245,0.55)]">
+              <Video className="w-8 h-8 text-[#aeaeb2] mx-auto mb-2" />
+              <p className="text-[14px] text-[#86868b]">
                 No content-to-sales data yet
               </p>
-              <p className="text-[12px] text-[rgba(245,245,245,0.3)] mt-1">
+              <p className="text-[12px] text-[#aeaeb2] mt-1">
                 Track which videos drive traffic and sales
               </p>
             </div>
@@ -589,24 +589,24 @@ export default function AtlasPage() {
                   key={entry.id}
                   className="card-static flex items-center gap-3"
                 >
-                  <Video className="w-4 h-4 text-[rgba(245,245,245,0.55)] shrink-0" />
+                  <Video className="w-4 h-4 text-[#86868b] shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-[#f5f5f5] truncate">
+                    <p className="text-[13px] font-medium text-[#1d1d1f] truncate">
                       {entry.videoTitle}
                     </p>
-                    <p className="text-[11px] text-[rgba(245,245,245,0.55)]">
+                    <p className="text-[11px] text-[#86868b]">
                       {entry.platform} &middot; {entry.date}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-center">
-                      <p className="text-[11px] text-[rgba(245,245,245,0.3)]">Clicks</p>
-                      <p className="text-[13px] font-medium text-[#f5f5f5]">
+                      <p className="text-[11px] text-[#aeaeb2]">Clicks</p>
+                      <p className="text-[13px] font-medium text-[#1d1d1f]">
                         {entry.clicksGenerated}
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-[11px] text-[rgba(245,245,245,0.3)]">Sales</p>
+                      <p className="text-[11px] text-[#aeaeb2]">Sales</p>
                       <p className="text-[13px] font-medium text-[#34c759]">
                         {entry.salesAttributed}
                       </p>
@@ -639,7 +639,7 @@ export default function AtlasPage() {
             <input type="hidden" name="intent" value="update-mission" />
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Total Donated ($)
                 </label>
                 <input
@@ -650,7 +650,7 @@ export default function AtlasPage() {
                 />
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Communities Helped
                 </label>
                 <input
@@ -670,14 +670,14 @@ export default function AtlasPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="card-static text-center">
             <Heart className="w-5 h-5 text-[#007aff] mx-auto mb-2" />
-            <p className="text-micro text-[rgba(245,245,245,0.55)]">Total Donated</p>
+            <p className="text-micro text-[#86868b]">Total Donated</p>
             <p className="text-stat-sm mt-1" style={{ color: "#007aff" }}>
               {formatCurrency(mission.totalDonated)}
             </p>
           </div>
           <div className="card-static text-center">
             <Droplets className="w-5 h-5 text-[#5ac8fa] mx-auto mb-2" />
-            <p className="text-micro text-[rgba(245,245,245,0.55)]">Communities Helped</p>
+            <p className="text-micro text-[#86868b]">Communities Helped</p>
             <p className="text-stat-sm mt-1" style={{ color: "#5ac8fa" }}>
               {mission.communitiesHelped}
             </p>

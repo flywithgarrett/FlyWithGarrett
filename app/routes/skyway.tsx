@@ -34,7 +34,7 @@ const DEFAULT_FEATURES: SkywayFeature[] = [
 ];
 
 const STATUS_COLUMNS: { key: FeatureStatus; label: string; color: string }[] = [
-  { key: "backlog", label: "Backlog", color: "rgba(245,245,245,0.4)" },
+  { key: "backlog", label: "Backlog", color: "#86868b" },
   { key: "in_dev", label: "In Dev", color: "#007aff" },
   { key: "testing", label: "Testing", color: "#ff9f0a" },
   { key: "shipped", label: "Shipped", color: "#34c759" },
@@ -143,7 +143,7 @@ export default function SkyWayPage() {
       {/* Header */}
       <div>
         <p className="text-title">SkyWay</p>
-        <p className="text-[14px] text-[rgba(245,245,245,0.55)] mt-1">
+        <p className="text-[14px] text-[#86868b] mt-1">
           Flight tracker app build dashboard
         </p>
       </div>
@@ -151,24 +151,24 @@ export default function SkyWayPage() {
       {/* Dashboard Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="card-static text-center">
-          <p className="text-micro text-[rgba(245,245,245,0.55)]">Phase</p>
+          <p className="text-micro text-[#86868b]">Phase</p>
           <p className="text-[15px] font-semibold text-[#007aff] mt-1">
             MVP Build
           </p>
         </div>
         <div className="card-static text-center">
-          <p className="text-micro text-[rgba(245,245,245,0.55)]">Days Since Start</p>
+          <p className="text-micro text-[#86868b]">Days Since Start</p>
           <p className="text-stat mt-1">{daysSinceStart}</p>
-          <p className="text-[11px] text-[rgba(245,245,245,0.3)]">Jan 15, 2025</p>
+          <p className="text-[11px] text-[#aeaeb2]">Jan 15, 2025</p>
         </div>
         <div className="card-static text-center">
-          <p className="text-micro text-[rgba(245,245,245,0.55)]">Features Shipped</p>
+          <p className="text-micro text-[#86868b]">Features Shipped</p>
           <p className="text-stat mt-1">
             {shippedCount}/{totalCount}
           </p>
         </div>
         <div className="card-static text-center">
-          <p className="text-micro text-[rgba(245,245,245,0.55)]">Beta Waitlist</p>
+          <p className="text-micro text-[#86868b]">Beta Waitlist</p>
           <div className="flex items-center justify-center gap-2 mt-1">
             <Users className="w-4 h-4 text-[#007aff]" />
             <p className="text-stat">{waitlist}</p>
@@ -191,7 +191,7 @@ export default function SkyWayPage() {
         >
           <input type="hidden" name="intent" value="update-waitlist" />
           <div className="flex-1">
-            <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+            <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
               Waitlist Count
             </label>
             <input
@@ -232,7 +232,7 @@ export default function SkyWayPage() {
           >
             <input type="hidden" name="intent" value="add-feature" />
             <div>
-              <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+              <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                 Title
               </label>
               <input
@@ -244,7 +244,7 @@ export default function SkyWayPage() {
               />
             </div>
             <div>
-              <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+              <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                 Description
               </label>
               <textarea
@@ -256,7 +256,7 @@ export default function SkyWayPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Priority
                 </label>
                 <select name="priority" defaultValue="med" className="input-field">
@@ -266,7 +266,7 @@ export default function SkyWayPage() {
                 </select>
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[rgba(245,245,245,0.55)] mb-1 block">
+                <label className="text-[12px] font-medium text-[#86868b] mb-1 block">
                   Effort
                 </label>
                 <select name="effort" defaultValue="M" className="input-field">
@@ -300,17 +300,17 @@ export default function SkyWayPage() {
                   ({featuresByStatus(col.key).length})
                 </span>
               </div>
-              <div className="space-y-2 min-h-[150px] p-2 rounded-[14px] bg-[rgba(255,255,255,0.04)]">
+              <div className="space-y-2 min-h-[150px] p-2 rounded-[14px] bg-[rgba(0,0,0,0.03)]">
                 {featuresByStatus(col.key).length === 0 ? (
                   <p className="text-micro text-center py-6">Empty</p>
                 ) : (
                   featuresByStatus(col.key).map((feature) => (
                     <div key={feature.id} className="card-static !p-3">
-                      <p className="text-[13px] font-medium text-[#f5f5f5]">
+                      <p className="text-[13px] font-medium text-[#1d1d1f]">
                         {feature.title}
                       </p>
                       {feature.description && (
-                        <p className="text-[11px] text-[rgba(245,245,245,0.55)] mt-0.5 line-clamp-2">
+                        <p className="text-[11px] text-[#86868b] mt-0.5 line-clamp-2">
                           {feature.description}
                         </p>
                       )}
@@ -393,7 +393,7 @@ export default function SkyWayPage() {
                           />
                           <button
                             type="submit"
-                            className="btn-ghost h-6 px-1.5 text-[rgba(245,245,245,0.3)] hover:text-[#ff3b30]"
+                            className="btn-ghost h-6 px-1.5 text-[#aeaeb2] hover:text-[#ff3b30]"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>

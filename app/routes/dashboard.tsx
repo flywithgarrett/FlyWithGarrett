@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLoaderData, Form, useFetcher, Link } from "react-router";
-import { Camera, Play, Music2, Droplets, Smartphone, Sparkles, RefreshCw, ArrowRight, TrendingUp, Target, Dumbbell, Plane, Calendar, Check, Flame, AlertTriangle } from "lucide-react";
+import { Camera, Play, Music2, Droplets, Smartphone, Sparkles, RefreshCw, ArrowRight, TrendingUp, Dumbbell, Plane, Calendar, Check } from "lucide-react";
 import { kvGet, kvSet, kvAddItem } from "~/lib/kv.server";
 import { getConnectionStatus } from "~/lib/analytics.server";
 import { generateDailyBrief, generateMorningBriefing, fetchTrendingContent } from "~/lib/ai.server";
@@ -10,25 +10,22 @@ import { fetchTodayEvents, isGoogleCalendarConnected } from "~/lib/google-calend
 import type { CalendarEvent } from "~/lib/google-calendar.server";
 import { PILLAR_CONFIG, WEEKLY_CADENCE, PLATFORM_CONFIG } from "~/lib/constants";
 import { formatNumber, generateId } from "~/lib/utils";
-import type { Idea, AnalyticsSnapshot, AtlasMetric, ContentItem } from "~/lib/types";
+import type { Idea, AnalyticsSnapshot, AtlasMetric } from "~/lib/types";
 import type { Route } from "./+types/dashboard";
 
-export function meta() { return [{ title: "Daily Brief — Life OS" }]; }
+export function meta() { return [{ title: "Daily Brief — FlyWithGarrett" }]; }
 
 export async function loader() {
   const today = new Date().toISOString().split("T")[0];
-  const todayDow = new Date().getDay();
-  const todayCadence = WEEKLY_CADENCE[todayDow];
+  const todayCadence = WEEKLY_CADENCE[new Date().getDay()];
   const pillarCfg = PILLAR_CONFIG[todayCadence.pillar];
 
-  const [snapshots, connections, atlasMetrics, contentItems, weather, gcalConnected, pilotSchedule, fitnessToday, completedToday] = await Promise.all([
+  const [snapshots, connections, atlasMetrics, weather, gcalConnected, fitnessToday, completedToday] = await Promise.all([
     kvGet<AnalyticsSnapshot[]>("analytics:snapshots"),
     getConnectionStatus(),
     kvGet<AtlasMetric[]>("atlas:metrics"),
-    kvGet<ContentItem[]>("content:items"),
     getNYCWeather(),
     isGoogleCalendarConnected(),
-    kvGet<{ type: string; details: string } | null>(`pilot:${today}`),
     kvGet<{ name: string; duration: string; muscles: string } | null>("fitness:today"),
     kvGet<string[]>(`completed:${today}`),
   ]);
@@ -40,24 +37,10 @@ export async function loader() {
   try { dailyIdeas = await generateDailyBrief(todayCadence.label, pillarCfg.description, today); } catch {}
 
   let briefing: DailyBriefing | null = null;
-  try {
-    briefing = await generateMorningBriefing({
-      date: new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }),
-      pillar: todayCadence.label,
-      pilotStatus: pilotSchedule?.type || "Day off",
-      calendarEvents: calendarEvents.map((e) => `${e.title} at ${e.start}`).join(", ") || "No events",
-      workout: fitnessToday?.name || "Check fitness plan",
-      atlasStatus: atlasMetrics?.length ? `Revenue: $${atlasMetrics[0].revenue}` : "Active",
-      skywayStatus: "MVP Build phase",
-    });
-  } catch {}
+  try { briefing = await generateMorningBriefing({ date: today, pillar: todayCadence.label, workout: fitnessToday?.name }); } catch {}
 
   let trends: TrendInsight[] = [];
   try { trends = await fetchTrendingContent(); } catch {}
-
-  // Calculate days since last content post
-  const postedItems = (contentItems ?? []).filter((i) => i.status === "posted" && i.postedAt).sort((a, b) => new Date(b.postedAt!).getTime() - new Date(a.postedAt!).getTime());
-  const daysSincePost = postedItems.length > 0 ? Math.floor((Date.now() - new Date(postedItems[0].postedAt!).getTime()) / 86400000) : 99;
 
   const platformStats = (["instagram", "youtube", "tiktok"] as const).map((p) => {
     const latest = (snapshots ?? []).filter((s) => s.platform === p).sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())[0];
@@ -67,10 +50,9 @@ export async function loader() {
   const latestAtlas = (atlasMetrics ?? []).sort((a, b) => new Date(b.recordedMonth).getTime() - new Date(a.recordedMonth).getTime())[0] ?? null;
 
   return {
-    todayCadence, pillarCfg: { color: pillarCfg.color, description: pillarCfg.description, label: pillarCfg.label },
+    todayCadence, pillarCfg: { color: pillarCfg.color, description: pillarCfg.description },
     platformStats, latestAtlas, dailyIdeas, briefing, trends, weather, calendarEvents, gcalConnected,
-    pilotStatus: pilotSchedule?.type || "Off today", fitnessToday, hasApiKey: !!process.env.ANTHROPIC_API_KEY,
-    daysSincePost, completedToday: completedToday ?? [],
+    fitnessToday, hasApiKey: !!process.env.ANTHROPIC_API_KEY, completedToday: completedToday ?? [],
   };
 }
 
@@ -90,9 +72,7 @@ export async function action({ request }: Route.ActionArgs) {
   return { ok: true };
 }
 
-const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = { instagram: Camera, youtube: Play, tiktok: Music2 };
-const reachDot: Record<string, string> = { high: "#10B981", medium: "#F59E0B", low: "rgba(245,245,245,0.2)" };
-const catColor: Record<string, string> = { personal: "#3B82F6", flying: "#06B6D4", content: "#FF6B35", business: "#8B5CF6", fitness: "#10B981" };
+const pIcons: Record<string, React.ComponentType<{ className?: string }>> = { instagram: Camera, youtube: Play, tiktok: Music2 };
 
 export default function DailyBrief() {
   const d = useLoaderData<typeof loader>();
@@ -101,88 +81,80 @@ export default function DailyBrief() {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   const priorities = [
-    ...(d.dailyIdeas.length > 0 ? [{ id: "content-1", icon: "🎬", label: d.dailyIdeas[0].hook, context: `${d.todayCadence.label} — ${d.daysSincePost > 3 ? `overdue ${d.daysSincePost} days` : "on schedule"}`, badge: d.daysSincePost > 3 ? "urgent" : "today", cat: "Content" }] : []),
-    ...(d.fitnessToday ? [{ id: "fitness", icon: "💪", label: `${d.fitnessToday.name}${d.fitnessToday.duration ? ` — ${d.fitnessToday.duration}` : ""}`, context: d.fitnessToday.muscles || "Fitness", badge: "today", cat: "Fitness" }] : [{ id: "fitness", icon: "💪", label: "Plan today's workout", context: "No workout set", badge: "today", cat: "Fitness" }]),
-    { id: "stories", icon: "📱", label: "Post 4-8 Instagram Stories", context: "Daily requirement from manager strategy", badge: "ongoing", cat: "Content" },
-    { id: "atlas", icon: "📦", label: d.briefing?.atlasAction || "Review Atlas Hydration status", context: d.latestAtlas ? `$${d.latestAtlas.revenue.toLocaleString()} this month` : "Check metrics", badge: "today", cat: "Atlas" },
-    { id: "skyway", icon: "💻", label: d.briefing?.skywayAction || "Check SkyWay progress", context: "MVP Build phase", badge: "ongoing", cat: "SkyWay" },
+    ...(d.dailyIdeas.length > 0 ? [{ id: "film", icon: "🎬", text: d.dailyIdeas[0].hook, sub: d.todayCadence.label, tag: "today" }] : []),
+    ...(d.fitnessToday ? [{ id: "gym", icon: "💪", text: d.fitnessToday.name, sub: d.fitnessToday.muscles || "", tag: "today" }] : []),
+    { id: "stories", icon: "📱", text: "Post 4–8 Instagram Stories", sub: "Daily habit", tag: "ongoing" },
+    { id: "atlas", icon: "💧", text: d.briefing?.atlasAction || "Check Atlas Hydration", sub: "Business", tag: "today" },
+    { id: "skyway", icon: "🛩", text: d.briefing?.skywayAction || "Review SkyWay progress", sub: "Product", tag: "ongoing" },
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Header */}
       <div>
-        <p className="text-title">{greeting}, Garrett.</p>
-        <p className="text-[13px] text-[rgba(245,245,245,0.4)] mt-1.5">
+        <h1 className="text-title">{greeting}, Garrett.</h1>
+        <p className="text-[14px] text-[#86868b] mt-1">
           {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · {d.weather.icon} {d.weather.temperature}°F · {d.weather.description}
         </p>
-        <div className="mt-3">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] font-semibold" style={{ backgroundColor: d.pillarCfg.color + "18", color: d.pillarCfg.color }}>
-            <span className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: d.pillarCfg.color }} />
-            {d.todayCadence.label}
-          </span>
-          {d.daysSincePost > 3 && <span className="badge-urgent ml-2">{d.daysSincePost}d since last post</span>}
-        </div>
+        <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full text-[12px] font-semibold" style={{ background: d.pillarCfg.color + "12", color: d.pillarCfg.color }}>
+          <span className="w-[5px] h-[5px] rounded-full" style={{ background: d.pillarCfg.color }} />
+          {d.todayCadence.label}
+        </span>
       </div>
 
       {/* AI Briefing */}
       {d.briefing && (
-        <div className="card-priority" style={{ borderLeftColor: "#FF6B35" }}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold text-[#FF6B35] uppercase tracking-[0.08em]">Your Briefing</p>
-            <fetcher.Form method="post"><input type="hidden" name="intent" value="regenerate" /><button type="submit" className="btn-ghost text-[11px] py-1 px-2"><RefreshCw className={`w-3 h-3 inline mr-1 ${fetcher.state !== "idle" ? "animate-spin" : ""}`} />Refresh</button></fetcher.Form>
-          </div>
-          <p className="text-[14px] text-[#f5f5f5] leading-relaxed">{d.briefing.summary}</p>
-          {d.briefing.bestFilmTime && <p className="text-[12px] text-[rgba(245,245,245,0.4)] mt-2">📍 Best time to film: {d.briefing.bestFilmTime}</p>}
+        <div className="card-static" style={{ borderLeft: `3px solid #007aff` }}>
+          <p className="text-[11px] font-semibold text-[#007aff] uppercase tracking-wide mb-2">Your Briefing</p>
+          <p className="text-[15px] text-[#1d1d1f] leading-relaxed">{d.briefing.summary}</p>
+          <p className="text-[13px] text-[#86868b] mt-2 italic">{d.briefing.bestFilmTime && `Best time to film: ${d.briefing.bestFilmTime}`}</p>
         </div>
       )}
 
       {/* Priorities */}
       <div>
         <p className="text-section mb-3">Today's Priorities</p>
-        <div className="space-y-[2px]">
-          {priorities.map((p, i) => {
+        <div className="divide-y divide-[rgba(0,0,0,0.06)]">
+          {priorities.map((p) => {
             const done = d.completedToday.includes(p.id);
             return (
-              <div key={p.id} className={`flex items-center gap-3 px-4 py-3 rounded-[10px] ${done ? "opacity-40" : "bg-[#1e1e1e]"}`}>
+              <div key={p.id} className={`flex items-center gap-3 py-3 ${done ? "opacity-40" : ""}`}>
                 <Form method="post" className="shrink-0">
                   <input type="hidden" name="intent" value="complete-task" />
                   <input type="hidden" name="taskId" value={p.id} />
-                  <button type="submit" className={`w-5 h-5 rounded-[6px] flex items-center justify-center transition-all ${done ? "bg-[#10B981]" : "border border-[rgba(255,255,255,0.15)] hover:border-[rgba(255,255,255,0.3)]"}`}>
-                    {done && <Check className="w-3 h-3 text-white" />}
+                  <button type="submit" className={`w-[22px] h-[22px] rounded-full flex items-center justify-center transition-all ${done ? "bg-[#34c759]" : "border-2 border-[rgba(0,0,0,0.15)] hover:border-[#007aff]"}`}>
+                    {done && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
                   </button>
                 </Form>
-                <span className="text-[16px] shrink-0">{p.icon}</span>
+                <span className="text-[18px] leading-none">{p.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] font-medium ${done ? "line-through text-[rgba(245,245,245,0.3)]" : "text-[#f5f5f5]"}`}>{p.label}</p>
-                  <p className="text-[11px] text-[rgba(245,245,245,0.3)]">{p.context}</p>
+                  <p className={`text-[14px] font-medium ${done ? "line-through text-[#86868b]" : "text-[#1d1d1f]"}`}>{p.text}</p>
+                  {p.sub && <p className="text-[12px] text-[#86868b]">{p.sub}</p>}
                 </div>
-                <span className={p.badge === "urgent" ? "badge-urgent" : p.badge === "today" ? "badge-today" : "badge-ongoing"}>{p.badge}</span>
+                <span className={p.tag === "today" ? "badge-today" : "badge-ongoing"}>{p.tag}</span>
               </div>
             );
           })}
         </div>
-        <p className="text-[11px] text-[rgba(245,245,245,0.15)] mt-2">{d.completedToday.length}/{priorities.length} completed today</p>
       </div>
 
       {/* Schedule */}
       <div>
         <p className="text-section mb-3">Schedule</p>
         <div className="card-static">
-          {d.calendarEvents.length === 0 && !d.gcalConnected ? (
+          {!d.gcalConnected ? (
             <div className="flex items-center justify-between">
-              <p className="text-body">No calendar connected</p>
-              <a href="/auth/google-calendar" className="text-[12px] text-[#3B82F6]">Connect Google Calendar →</a>
+              <p className="text-[14px] text-[#86868b]">Connect your calendar to see today's events</p>
+              <a href="/auth/google-calendar" className="text-[13px] text-[#007aff] font-medium">Connect →</a>
             </div>
           ) : d.calendarEvents.length === 0 ? (
-            <p className="text-body">No meetings today — full creative day</p>
+            <p className="text-[14px] text-[#86868b]">No events today — open schedule</p>
           ) : (
             <div className="space-y-2">
               {d.calendarEvents.map((e) => (
                 <div key={e.id} className="flex items-center gap-3">
-                  <span className="text-[12px] text-[rgba(245,245,245,0.3)] w-16 shrink-0 tabular-nums">{e.allDay ? "All day" : new Date(e.start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
-                  <div className="w-1 h-4 rounded-full" style={{ backgroundColor: catColor[e.category] || "#3B82F6" }} />
-                  <span className="text-[13px] text-[#f5f5f5]">{e.title}</span>
+                  <span className="text-[13px] text-[#86868b] w-16 shrink-0 tabular-nums">{e.allDay ? "All day" : new Date(e.start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
+                  <p className="text-[14px] text-[#1d1d1f]">{e.title}</p>
                 </div>
               ))}
             </div>
@@ -190,95 +162,99 @@ export default function DailyBrief() {
         </div>
       </div>
 
-      {/* Three Business Pulses */}
-      <div className="grid grid-cols-3 gap-3">
-        <Link to="/studio" className="card-static hover:bg-[#262626] transition-colors">
-          <p className="text-[10px] font-semibold text-[#FF6B35] uppercase tracking-[0.08em] mb-2">Content</p>
-          <p className="text-[13px] text-[#f5f5f5]">Last post: <span className={d.daysSincePost > 3 ? "text-[#ef4444]" : d.daysSincePost > 1 ? "text-[#f59e0b]" : "text-[#10b981]"}>{d.daysSincePost === 0 ? "Today" : `${d.daysSincePost}d ago`}</span></p>
-          <p className="text-[11px] text-[rgba(245,245,245,0.3)] mt-1">Pillar: {d.todayCadence.label}</p>
-        </Link>
-        <Link to="/atlas" className="card-static hover:bg-[#262626] transition-colors">
-          <p className="text-[10px] font-semibold text-[#10B981] uppercase tracking-[0.08em] mb-2">Atlas</p>
-          <p className="text-stat-sm">{d.latestAtlas ? `$${(d.latestAtlas.revenue / 1000).toFixed(1)}K` : "—"}</p>
-          <p className="text-[11px] text-[rgba(245,245,245,0.3)] mt-1">Revenue this month</p>
-        </Link>
-        <Link to="/skyway" className="card-static hover:bg-[#262626] transition-colors">
-          <p className="text-[10px] font-semibold text-[#06B6D4] uppercase tracking-[0.08em] mb-2">SkyWay</p>
-          <p className="text-[13px] text-[#f5f5f5]">MVP Build</p>
-          <p className="text-[11px] text-[rgba(245,245,245,0.3)] mt-1">Phase active</p>
-        </Link>
-      </div>
-
-      {/* Content Mission */}
+      {/* Business at a Glance */}
       <div>
-        <p className="text-section mb-3">Content Mission</p>
-        {!d.hasApiKey && <div className="mb-2 px-3 py-2 rounded-[8px] bg-[rgba(245,158,11,0.08)]"><p className="text-[11px] text-[#f59e0b]">Add ANTHROPIC_API_KEY for AI-powered ideas</p></div>}
-        <div className="space-y-2">
-          {d.dailyIdeas.map((idea, i) => (
-            <div key={i} className="card-static" style={{ borderLeft: `2px solid ${d.pillarCfg.color}30` }}>
-              <p className="text-[14px] font-medium text-[#f5f5f5] leading-snug">"{idea.hook}"</p>
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <span className="pill text-[10px]">{idea.format}</span>
-                <span className="pill text-[10px]">{idea.platform}</span>
-                <span className="flex items-center gap-1"><span className="w-[4px] h-[4px] rounded-full" style={{ backgroundColor: reachDot[idea.estimated_reach] }} /><span className="text-[10px] text-[rgba(245,245,245,0.3)]">{idea.estimated_reach}</span></span>
-              </div>
-              <p className="text-[12px] text-[rgba(245,245,245,0.3)] mt-1.5 italic">{idea.why_now}</p>
-              <p className="text-[12px] mt-1" style={{ color: d.pillarCfg.color }}>{idea.filming_tip}</p>
-              <div className="flex gap-1.5 mt-3">
-                <Link to="/studio" className="btn-ghost text-[11px] py-1 px-2.5">Write Script <ArrowRight className="w-3 h-3 inline ml-0.5" /></Link>
-                <Form method="post"><input type="hidden" name="intent" value="use-idea" /><input type="hidden" name="hook" value={idea.hook} /><input type="hidden" name="pillar" value={d.todayCadence.pillar} /><button type="submit" className="btn-ghost text-[11px] py-1 px-2.5">Save</button></Form>
-              </div>
-            </div>
-          ))}
+        <p className="text-section mb-3">Business</p>
+        <div className="grid grid-cols-3 gap-3">
+          <Link to="/atlas" className="card">
+            <Droplets className="w-4 h-4 text-[#34c759] mb-2" />
+            <p className="text-[13px] font-semibold text-[#1d1d1f]">Atlas Hydration</p>
+            <p className="text-[12px] text-[#86868b] mt-0.5">{d.latestAtlas ? `$${d.latestAtlas.revenue.toLocaleString()} rev` : "4 flavors · Active"}</p>
+          </Link>
+          <Link to="/skyway" className="card">
+            <Smartphone className="w-4 h-4 text-[#007aff] mb-2" />
+            <p className="text-[13px] font-semibold text-[#1d1d1f]">SkyWay</p>
+            <p className="text-[12px] text-[#86868b] mt-0.5">MVP Build</p>
+          </Link>
+          <Link to="/business" className="card">
+            <TrendingUp className="w-4 h-4 text-[#ff9500] mb-2" />
+            <p className="text-[13px] font-semibold text-[#1d1d1f]">Financials</p>
+            <p className="text-[12px] text-[#86868b] mt-0.5">View P&L</p>
+          </Link>
         </div>
       </div>
 
-      {/* Pilot + Fitness */}
-      <div className="grid grid-cols-2 gap-3">
-        <Link to="/pilot" className="card flex items-center gap-3">
-          <Plane className="w-4 h-4 text-[#06B6D4] shrink-0" />
-          <div><p className="text-[13px] font-medium text-[#f5f5f5]">Pilot</p><p className="text-[11px] text-[rgba(245,245,245,0.3)]">{d.pilotStatus}</p></div>
-        </Link>
-        <Link to="/fitness" className="card flex items-center gap-3">
-          <Dumbbell className="w-4 h-4 text-[#10B981] shrink-0" />
-          <div><p className="text-[13px] font-medium text-[#f5f5f5]">Fitness</p><p className="text-[11px] text-[rgba(245,245,245,0.3)]">{d.fitnessToday?.name || "Plan workout"}</p></div>
-        </Link>
-      </div>
-
-      {/* Trending */}
-      {d.trends.length > 0 && (
+      {/* Content Ideas */}
+      {d.dailyIdeas.length > 0 && (
         <div>
-          <p className="text-section mb-3">Trending Now</p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {d.trends.map((t, i) => (
-              <div key={i} className="card-static min-w-[260px] max-w-[300px] shrink-0 !p-4">
-                <p className="text-[13px] font-medium text-[#f5f5f5]">{t.trend}</p>
-                <p className="text-[11px] text-[rgba(245,245,245,0.3)] mt-1">{t.why_it_works}</p>
-                <p className="text-[11px] text-[#3B82F6] mt-1">{t.how_garrett_can_use_it}</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-section">Content Ideas</p>
+            <fetcher.Form method="post"><input type="hidden" name="intent" value="regenerate" /><button type="submit" className="text-[12px] text-[#007aff] font-medium flex items-center gap-1"><RefreshCw className={`w-3 h-3 ${fetcher.state !== "idle" ? "animate-spin" : ""}`} /> Refresh</button></fetcher.Form>
+          </div>
+          <div className="space-y-3">
+            {d.dailyIdeas.map((idea, i) => (
+              <div key={i} className="card-static" style={{ borderLeft: `3px solid ${d.pillarCfg.color}` }}>
+                <p className="text-[15px] font-medium text-[#1d1d1f]">"{idea.hook}"</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="pill">{idea.format}</span>
+                  <span className="pill">{idea.platform}</span>
+                </div>
+                {idea.why_now !== "Evergreen content" && <p className="text-[12px] text-[#86868b] mt-2 italic">{idea.why_now}</p>}
+                {idea.filming_tip !== "Film in natural light" && <p className="text-[12px] mt-1" style={{ color: d.pillarCfg.color }}>{idea.filming_tip}</p>}
+                <div className="flex gap-2 mt-3">
+                  <Link to="/studio" className="btn-ghost text-[12px]">Write Script <ArrowRight className="w-3 h-3 inline ml-0.5" /></Link>
+                  <Form method="post"><input type="hidden" name="intent" value="use-idea" /><input type="hidden" name="hook" value={idea.hook} /><input type="hidden" name="pillar" value={d.todayCadence.pillar} /><button type="submit" className="btn-ghost text-[12px]">Save</button></Form>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Platform Stats */}
+      {/* Quick Links */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link to="/pilot" className="card flex items-center gap-3">
+          <Plane className="w-4 h-4 text-[#007aff]" /><span className="text-[13px] font-medium text-[#1d1d1f]">Flight Schedule</span>
+        </Link>
+        <Link to="/fitness" className="card flex items-center gap-3">
+          <Dumbbell className="w-4 h-4 text-[#34c759]" /><span className="text-[13px] font-medium text-[#1d1d1f]">Fitness</span>
+        </Link>
+      </div>
+
+      {/* Audience */}
       <div>
         <p className="text-section mb-3">Audience</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           {d.platformStats.map((p) => {
-            const Icon = platformIcons[p.platform];
+            const Icon = pIcons[p.platform];
             return (
-              <div key={p.platform} className="card-static !p-3">
-                <div className="flex items-center gap-1.5 mb-2">
+              <div key={p.platform} className="card-static text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1.5">
                   {Icon && <Icon className="w-3.5 h-3.5" style={{ color: p.color }} />}
-                  <span className="text-[11px] text-[rgba(245,245,245,0.3)]">{p.label}</span>
+                  <span className="text-[12px] text-[#86868b]">{p.label}</span>
                 </div>
-                <p className="text-stat-sm">{formatNumber(p.followers)}</p>
+                <p className="text-stat">{formatNumber(p.followers)}</p>
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Trending */}
+      {d.trends.length > 0 && (
+        <div>
+          <p className="text-section mb-3">Trending</p>
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {d.trends.map((t, i) => (
+              <div key={i} className="card-static min-w-[260px] max-w-[300px] shrink-0">
+                <p className="text-[13px] font-medium text-[#1d1d1f]">{t.trend}</p>
+                <p className="text-[12px] text-[#86868b] mt-1">{t.why_it_works}</p>
+                <p className="text-[12px] text-[#007aff] mt-1">{t.how_garrett_can_use_it}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

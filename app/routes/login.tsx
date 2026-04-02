@@ -1,5 +1,5 @@
 import { Form, redirect, useActionData } from "react-router";
-import { Plane, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { createSession, getSession } from "~/lib/auth.server";
 import type { Route } from "./+types/login";
 
@@ -19,20 +19,20 @@ export async function action({ request }: Route.ActionArgs) {
 export default function Login() {
   const actionData = useActionData<typeof action>();
   return (
-    <div className="min-h-screen bg-[#141414] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-[320px]">
         <div className="text-center mb-10">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#F59E0B] flex items-center justify-center mx-auto mb-4 text-[16px] font-bold text-white">G</div>
-          <h1 className="text-[24px] font-light text-[#f5f5f5] tracking-tight">FlyWithGarrett</h1>
-          <p className="text-[11px] text-[rgba(245,245,245,0.2)] mt-1">Life OS</p>
+          <div className="w-12 h-12 rounded-xl bg-[#1d1d1f] flex items-center justify-center mx-auto mb-4 text-[16px] font-bold text-white">G</div>
+          <h1 className="text-[24px] font-bold text-[#1d1d1f]">FlyWithGarrett</h1>
+          <p className="text-[13px] text-[#86868b] mt-1">Life OS</p>
         </div>
         <Form method="post" className="space-y-3">
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[rgba(245,245,245,0.2)]" />
-            <input type="password" name="password" placeholder="Password" className="input-field pl-9 h-[42px]" autoFocus />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#86868b]" />
+            <input type="password" name="password" placeholder="Password" className="input-field pl-10 h-[44px]" autoFocus />
           </div>
-          {actionData?.error && <p className="text-[12px] text-[#ef4444]">{actionData.error}</p>}
-          <button type="submit" className="btn-primary w-full h-[42px]">Enter</button>
+          {actionData?.error && <p className="text-[13px] text-[#ff3b30]">{actionData.error}</p>}
+          <button type="submit" className="btn-primary w-full h-[44px]">Sign In</button>
         </Form>
       </div>
     </div>
