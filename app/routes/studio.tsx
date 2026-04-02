@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { useLoaderData, Form } from "react-router";
+import { useState, useEffect } from "react";
+import { useLoaderData, Form, useFetcher } from "react-router";
 import { Lightbulb, Layers, Plus, Trash2, Sparkles, Zap, RefreshCw, Camera, Play, Music2, X, ClipboardCopy, BookmarkPlus, Check } from "lucide-react";
 import { kvGet, kvAddItem, kvDeleteItem } from "~/lib/kv.server";
 import { PILLAR_CONFIG, PILLARS, PILLAR_HOOKS } from "~/lib/constants";
@@ -20,6 +20,7 @@ export async function loader() {
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
+
   if (intent === "add-idea") {
     await kvAddItem("ideas:bank", {
       id: generateId(), title: formData.get("title") as string,
@@ -27,10 +28,51 @@ export async function action({ request }: Route.ActionArgs) {
       hookDraft: formData.get("hookDraft") as string || "",
       notes: "", status: "raw", createdAt: new Date().toISOString(),
     } satisfies Idea);
-  } else if (intent === "delete-idea") {
-    await kvDeleteItem<Idea>("ideas:bank", formData.get("id") as string);
+    return { ok: true };
   }
+
+  if (intent === "delete-idea") {
+    await kvDeleteItem<Idea>("ideas:bank", formData.get("id") as string);
+    return { ok: true };
+  }
+
+  if (intent === "regenerate-pillar") {
+    const pillar = formData.get("pillar") as string;
+    const pillarLabel = formData.get("pillarLabel") as string;
+    const pillarDescription = formData.get("pillarDescription") as string;
+    const hooks = await generateHooksForPillar(pillarLabel, pillarDescription);
+    return { regenerated: pillar, hooks };
+  }
+
   return { ok: true };
+}
+
+async function generateHooksForPillar(pillarLabel: string, description: string): Promise<string[]> {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return [
+      `New ${pillarLabel} hook idea — trending format`,
+      `What nobody tells you about ${pillarLabel.toLowerCase()}`,
+      `The honest truth about my ${pillarLabel.toLowerCase()} journey`,
+      `3 things I learned this week about ${pillarLabel.toLowerCase()}`,
+      `POV: your ${pillarLabel.toLowerCase()} routine is wrong`,
+      `I stopped doing this and everything changed`,
+      `Unpopular opinion about ${pillarLabel.toLowerCase()}`,
+    ];
+  }
+  try {
+    const Anthropic = (await import("@anthropic-ai/sdk")).default;
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const msg = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 800,
+      system: `You are a content strategist for @flywithgarrett, a Boeing 787 pilot, NYC lifestyle creator with 806K Instagram, Atlas Hydration founder. Write scroll-stopping hooks in his voice: confident, authentic, funny, self-aware.`,
+      messages: [{ role: "user", content: `Generate exactly 7 fresh content hooks for "${pillarLabel}" (${description}). Scroll-stopping first lines for TikTok/Reels. Return ONLY a JSON array of 7 strings: ["hook1","hook2",...]` }],
+    });
+    const text = msg.content[0].type === "text" ? msg.content[0].text : "";
+    const match = text.match(/\[[\s\S]*?\]/);
+    if (match) return (JSON.parse(match[0]) as string[]).slice(0, 7);
+  } catch (e) { console.error("Hook generation error:", e); }
+  return [];
 }
 
 const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = { instagram: Camera, youtube: Play, tiktok: Music2 };
@@ -43,68 +85,71 @@ export default function StudioPage() {
   const [expandedPillar, setExpandedPillar] = useState<Pillar | null>(null);
   const [filterPillar, setFilterPillar] = useState<string>("all");
   const [scriptModal, setScriptModal] = useState<ScriptModal | null>(null);
-
-  // Per-pillar hooks in state so we can modify them
   const [pillarHooks, setPillarHooks] = useState<Record<Pillar, string[]>>(() => ({ ...PILLAR_HOOKS }));
   const [savedHooks, setSavedHooks] = useState<Set<string>>(new Set());
-  const [regenerating, setRegenerating] = useState<Pillar | "all" | null>(null);
+
+  // One fetcher per pillar for independent regeneration
+  const regenFetcher = useFetcher();
+  const regenAllFetcher = useFetcher();
+
+  // When a single-pillar regeneration completes, update that pillar's hooks
+  useEffect(() => {
+    const data = regenFetcher.data as any;
+    if (data?.regenerated && data?.hooks?.length > 0) {
+      setPillarHooks((prev) => ({ ...prev, [data.regenerated]: data.hooks }));
+    }
+  }, [regenFetcher.data]);
+
+  // Track which pillar is being regenerated
+  const regenPillar = regenFetcher.state !== "idle"
+    ? (regenFetcher.formData?.get("pillar") as Pillar | null)
+    : null;
+
+  // "Regenerate All" — submit one pillar at a time sequentially
+  const [regenAllQueue, setRegenAllQueue] = useState<Pillar[]>([]);
+  const [regenAllActive, setRegenAllActive] = useState(false);
+
+  const startRegenAll = () => {
+    setRegenAllActive(true);
+    setRegenAllQueue([...PILLARS]);
+  };
+
+  // Process the queue
+  useEffect(() => {
+    if (!regenAllActive || regenAllQueue.length === 0) {
+      if (regenAllActive && regenAllQueue.length === 0) setRegenAllActive(false);
+      return;
+    }
+    if (regenAllFetcher.state !== "idle") return; // wait for current one to finish
+
+    const nextPillar = regenAllQueue[0];
+    const cfg = PILLAR_CONFIG[nextPillar];
+    regenAllFetcher.submit(
+      { intent: "regenerate-pillar", pillar: nextPillar, pillarLabel: cfg.label, pillarDescription: cfg.description },
+      { method: "post" }
+    );
+    setRegenAllQueue((q) => q.slice(1));
+  }, [regenAllActive, regenAllQueue, regenAllFetcher.state]);
+
+  // When regenAll fetcher completes, update hooks
+  useEffect(() => {
+    const data = regenAllFetcher.data as any;
+    if (data?.regenerated && data?.hooks?.length > 0) {
+      setPillarHooks((prev) => ({ ...prev, [data.regenerated]: data.hooks }));
+    }
+  }, [regenAllFetcher.data]);
 
   const filteredIdeas = ideas.filter((i) => filterPillar === "all" || i.pillar === filterPillar);
 
-  // Save a hook to the idea bank
   const saveHook = async (hook: string, pillar: Pillar) => {
     await fetch("/api/save-idea", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: hook, pillar, hookDraft: hook }),
     });
     setSavedHooks((prev) => new Set(prev).add(hook));
   };
 
-  // Call the regenerate API for a single pillar
-  const callRegenerateApi = async (pillar: Pillar): Promise<string[]> => {
-    const cfg = PILLAR_CONFIG[pillar];
-    const res = await fetch("/api/regenerate-hooks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pillar, pillarLabel: cfg.label, pillarDescription: cfg.description }),
-    });
-    if (!res.ok) {
-      console.error("Regenerate failed:", res.status, await res.text());
-      return [];
-    }
-    const data = await res.json();
-    return data.hooks || [];
-  };
-
-  // Regenerate hooks for one pillar
-  const regeneratePillar = async (pillar: Pillar) => {
-    setRegenerating(pillar);
-    const hooks = await callRegenerateApi(pillar);
-    if (hooks.length > 0) setPillarHooks((prev) => ({ ...prev, [pillar]: hooks }));
-    setRegenerating(null);
-  };
-
-  // Regenerate all pillars
-  const regenerateAll = async () => {
-    setRegenerating("all");
-    const results = await Promise.all(
-      PILLARS.map(async (pillar) => {
-        const hooks = await callRegenerateApi(pillar);
-        return { pillar, hooks };
-      })
-    );
-    setPillarHooks((prev) => {
-      const next = { ...prev };
-      for (const { pillar, hooks } of results) {
-        if (hooks.length > 0) next[pillar] = hooks;
-      }
-      return next;
-    });
-    setRegenerating(null);
-  };
-
-  const openScriptWriter = useCallback(async (hook: string, pillar: Pillar) => {
+  const openScriptWriter = async (hook: string, pillar: Pillar) => {
     setScriptModal({ hook, pillar, script: null, loading: true, error: null, copied: false, saved: false, mock: false });
     try {
       const res = await fetch("/api/generate-script", {
@@ -115,7 +160,7 @@ export default function StudioPage() {
       if (data.script) setScriptModal((prev) => prev ? { ...prev, script: data.script, loading: false, mock: !!data.mock } : null);
       else setScriptModal((prev) => prev ? { ...prev, error: data.error || "Failed", loading: false } : null);
     } catch { setScriptModal((prev) => prev ? { ...prev, error: "Network error", loading: false } : null); }
-  }, []);
+  };
 
   const tabs = [
     { key: "pillars", label: "Pillars & Hooks", icon: Zap },
@@ -143,10 +188,10 @@ export default function StudioPage() {
           ))}
         </div>
         {tab === "pillars" && (
-          <button onClick={regenerateAll} disabled={regenerating === "all"}
+          <button onClick={startRegenAll} disabled={regenAllActive}
             className="btn-ghost text-[12px] flex items-center gap-1.5">
-            <RefreshCw className={`w-3 h-3 ${regenerating === "all" ? "animate-spin" : ""}`} />
-            {regenerating === "all" ? "Regenerating..." : "Regenerate All"}
+            <RefreshCw className={`w-3 h-3 ${regenAllActive ? "animate-spin" : ""}`} />
+            {regenAllActive ? "Regenerating..." : "Regenerate All"}
           </button>
         )}
       </div>
@@ -158,7 +203,7 @@ export default function StudioPage() {
             const p = PILLAR_CONFIG[key];
             const hooks = pillarHooks[key] || [];
             const isExpanded = expandedPillar === key;
-            const isRegenThis = regenerating === key;
+            const isRegenThis = regenPillar === key || (regenAllActive && regenAllFetcher.formData?.get("pillar") === key);
             return (
               <div key={key} className="card-static overflow-hidden !rounded-[16px]" style={{ borderLeft: `3px solid ${p.color}` }}>
                 <button onClick={() => setExpandedPillar(isExpanded ? null : key)}
@@ -176,15 +221,19 @@ export default function StudioPage() {
                 </button>
                 {isExpanded && (
                   <div className="px-5 pb-5">
-                    {/* Per-pillar regenerate */}
                     <div className="flex items-center justify-between mb-3">
                       <div className="divider flex-1" />
-                      <button onClick={(e) => { e.stopPropagation(); regeneratePillar(key); }}
-                        disabled={!!regenerating}
-                        className="ml-3 text-[11px] text-[#007aff] font-medium flex items-center gap-1 hover:text-[#0066d6] transition-colors">
-                        <RefreshCw className={`w-3 h-3 ${isRegenThis ? "animate-spin" : ""}`} />
-                        {isRegenThis ? "Regenerating..." : "Regenerate"}
-                      </button>
+                      <regenFetcher.Form method="post" className="ml-3">
+                        <input type="hidden" name="intent" value="regenerate-pillar" />
+                        <input type="hidden" name="pillar" value={key} />
+                        <input type="hidden" name="pillarLabel" value={p.label} />
+                        <input type="hidden" name="pillarDescription" value={p.description} />
+                        <button type="submit" disabled={regenPillar !== null || regenAllActive}
+                          className="text-[11px] text-[#007aff] font-medium flex items-center gap-1 hover:text-[#0066d6]">
+                          <RefreshCw className={`w-3 h-3 ${isRegenThis ? "animate-spin" : ""}`} />
+                          {isRegenThis ? "Regenerating..." : "Regenerate"}
+                        </button>
+                      </regenFetcher.Form>
                     </div>
                     <div className="space-y-2">
                       {hooks.map((hook, i) => {
@@ -196,14 +245,10 @@ export default function StudioPage() {
                               {!isSaved ? (
                                 <>
                                   <button onClick={() => openScriptWriter(hook, key)} className="btn-primary text-[11px] py-1 px-3">Write Script</button>
-                                  <button onClick={() => saveHook(hook, key)} className="btn-ghost text-[11px] py-1 px-2 flex items-center gap-1">
-                                    <BookmarkPlus className="w-3 h-3" /> Save
-                                  </button>
+                                  <button onClick={() => saveHook(hook, key)} className="btn-ghost text-[11px] py-1 px-2 flex items-center gap-1"><BookmarkPlus className="w-3 h-3" /> Save</button>
                                 </>
                               ) : (
-                                <span className="flex items-center gap-1 text-[11px] text-[#34c759]">
-                                  <Check className="w-3 h-3" /> Saved to Ideas
-                                </span>
+                                <span className="flex items-center gap-1 text-[11px] text-[#34c759]"><Check className="w-3 h-3" /> Saved</span>
                               )}
                             </div>
                           </div>
