@@ -1,8 +1,14 @@
 import type { Route } from "./+types/api.regenerate-hooks";
 
+export async function loader() {
+  return Response.json({ error: "Use POST" }, { status: 405 });
+}
+
 export async function action({ request }: Route.ActionArgs) {
   try {
-    const { pillar, pillarLabel, pillarDescription } = await request.json();
+    const body = await request.json();
+    const pillarLabel = body.pillarLabel || "Lifestyle";
+    const pillarDescription = body.pillarDescription || "";
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return Response.json({ hooks: [
@@ -35,8 +41,9 @@ export async function action({ request }: Route.ActionArgs) {
       const hooks = JSON.parse(match[0]) as string[];
       return Response.json({ hooks: hooks.slice(0, 7) });
     }
-    return Response.json({ hooks: [], error: "Failed to parse" }, { status: 500 });
+    return Response.json({ hooks: [], error: "Failed to parse AI response" }, { status: 500 });
   } catch (e: any) {
-    return Response.json({ hooks: [], error: e.message }, { status: 500 });
+    console.error("Regenerate hooks error:", e);
+    return Response.json({ hooks: [], error: e.message || "Server error" }, { status: 500 });
   }
 }

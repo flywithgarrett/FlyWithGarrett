@@ -61,41 +61,46 @@ export default function StudioPage() {
     setSavedHooks((prev) => new Set(prev).add(hook));
   };
 
+  // Call the regenerate API for a single pillar
+  const callRegenerateApi = async (pillar: Pillar): Promise<string[]> => {
+    const cfg = PILLAR_CONFIG[pillar];
+    const res = await fetch("/api/regenerate-hooks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pillar, pillarLabel: cfg.label, pillarDescription: cfg.description }),
+    });
+    if (!res.ok) {
+      console.error("Regenerate failed:", res.status, await res.text());
+      return [];
+    }
+    const data = await res.json();
+    return data.hooks || [];
+  };
+
   // Regenerate hooks for one pillar
   const regeneratePillar = async (pillar: Pillar) => {
     setRegenerating(pillar);
-    try {
-      const cfg = PILLAR_CONFIG[pillar];
-      const res = await fetch("/api/regenerate-hooks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pillar, pillarLabel: cfg.label, pillarDescription: cfg.description }),
-      });
-      const data = await res.json();
-      if (data.hooks?.length > 0) {
-        setPillarHooks((prev) => ({ ...prev, [pillar]: data.hooks }));
-      }
-    } catch {}
+    const hooks = await callRegenerateApi(pillar);
+    if (hooks.length > 0) setPillarHooks((prev) => ({ ...prev, [pillar]: hooks }));
     setRegenerating(null);
   };
 
   // Regenerate all pillars
   const regenerateAll = async () => {
     setRegenerating("all");
-    for (const pillar of PILLARS) {
-      try {
-        const cfg = PILLAR_CONFIG[pillar];
-        const res = await fetch("/api/regenerate-hooks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pillar, pillarLabel: cfg.label, pillarDescription: cfg.description }),
-        });
-        const data = await res.json();
-        if (data.hooks?.length > 0) {
-          setPillarHooks((prev) => ({ ...prev, [pillar]: data.hooks }));
-        }
-      } catch {}
-    }
+    const results = await Promise.all(
+      PILLARS.map(async (pillar) => {
+        const hooks = await callRegenerateApi(pillar);
+        return { pillar, hooks };
+      })
+    );
+    setPillarHooks((prev) => {
+      const next = { ...prev };
+      for (const { pillar, hooks } of results) {
+        if (hooks.length > 0) next[pillar] = hooks;
+      }
+      return next;
+    });
     setRegenerating(null);
   };
 
