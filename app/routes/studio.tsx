@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useLoaderData, Form, useFetcher } from "react-router";
+import { useState } from "react";
+import { useLoaderData, Form } from "react-router";
 import { Lightbulb, Layers, Plus, Trash2, Sparkles, Zap, RefreshCw, Camera, Play, Music2, X, ClipboardCopy, BookmarkPlus, Check } from "lucide-react";
 import { kvGet, kvAddItem, kvDeleteItem } from "~/lib/kv.server";
 import { PILLAR_CONFIG, PILLARS, PILLAR_HOOKS } from "~/lib/constants";
@@ -20,7 +20,6 @@ export async function loader() {
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
-
   if (intent === "add-idea") {
     await kvAddItem("ideas:bank", {
       id: generateId(), title: formData.get("title") as string,
@@ -28,51 +27,10 @@ export async function action({ request }: Route.ActionArgs) {
       hookDraft: formData.get("hookDraft") as string || "",
       notes: "", status: "raw", createdAt: new Date().toISOString(),
     } satisfies Idea);
-    return { ok: true };
-  }
-
-  if (intent === "delete-idea") {
+  } else if (intent === "delete-idea") {
     await kvDeleteItem<Idea>("ideas:bank", formData.get("id") as string);
-    return { ok: true };
   }
-
-  if (intent === "regenerate-pillar") {
-    const pillar = formData.get("pillar") as string;
-    const pillarLabel = formData.get("pillarLabel") as string;
-    const pillarDescription = formData.get("pillarDescription") as string;
-    const hooks = await generateHooksForPillar(pillarLabel, pillarDescription);
-    return { regenerated: pillar, hooks };
-  }
-
   return { ok: true };
-}
-
-async function generateHooksForPillar(pillarLabel: string, description: string): Promise<string[]> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return [
-      `New ${pillarLabel} hook idea — trending format`,
-      `What nobody tells you about ${pillarLabel.toLowerCase()}`,
-      `The honest truth about my ${pillarLabel.toLowerCase()} journey`,
-      `3 things I learned this week about ${pillarLabel.toLowerCase()}`,
-      `POV: your ${pillarLabel.toLowerCase()} routine is wrong`,
-      `I stopped doing this and everything changed`,
-      `Unpopular opinion about ${pillarLabel.toLowerCase()}`,
-    ];
-  }
-  try {
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const msg = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 800,
-      system: `You are a content strategist for @flywithgarrett, a Boeing 787 pilot, NYC lifestyle creator with 806K Instagram, Atlas Hydration founder. Write scroll-stopping hooks in his voice: confident, authentic, funny, self-aware.`,
-      messages: [{ role: "user", content: `Generate exactly 7 fresh content hooks for "${pillarLabel}" (${description}). Scroll-stopping first lines for TikTok/Reels. Return ONLY a JSON array of 7 strings: ["hook1","hook2",...]` }],
-    });
-    const text = msg.content[0].type === "text" ? msg.content[0].text : "";
-    const match = text.match(/\[[\s\S]*?\]/);
-    if (match) return (JSON.parse(match[0]) as string[]).slice(0, 7);
-  } catch (e) { console.error("Hook generation error:", e); }
-  return [];
 }
 
 const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = { instagram: Camera, youtube: Play, tiktok: Music2 };
@@ -85,82 +43,87 @@ export default function StudioPage() {
   const [expandedPillar, setExpandedPillar] = useState<Pillar | null>(null);
   const [filterPillar, setFilterPillar] = useState<string>("all");
   const [scriptModal, setScriptModal] = useState<ScriptModal | null>(null);
-  const [pillarHooks, setPillarHooks] = useState<Record<Pillar, string[]>>(() => ({ ...PILLAR_HOOKS }));
+
+  // Hooks state — starts with defaults, updated by regenerate
+  const [pillarHooks, setPillarHooks] = useState<Record<string, string[]>>(() => ({ ...PILLAR_HOOKS }));
   const [savedHooks, setSavedHooks] = useState<Set<string>>(new Set());
-
-  // One fetcher per pillar for independent regeneration
-  const regenFetcher = useFetcher();
-  const regenAllFetcher = useFetcher();
-
-  // When a single-pillar regeneration completes, update that pillar's hooks
-  useEffect(() => {
-    const data = regenFetcher.data as any;
-    if (data?.regenerated && data?.hooks?.length > 0) {
-      setPillarHooks((prev) => ({ ...prev, [data.regenerated]: data.hooks }));
-    }
-  }, [regenFetcher.data]);
-
-  // Track which pillar is being regenerated
-  const regenPillar = regenFetcher.state !== "idle"
-    ? (regenFetcher.formData?.get("pillar") as Pillar | null)
-    : null;
-
-  // "Regenerate All" — submit one pillar at a time sequentially
-  const [regenAllQueue, setRegenAllQueue] = useState<Pillar[]>([]);
-  const [regenAllActive, setRegenAllActive] = useState(false);
-
-  const startRegenAll = () => {
-    setRegenAllActive(true);
-    setRegenAllQueue([...PILLARS]);
-  };
-
-  // Process the queue
-  useEffect(() => {
-    if (!regenAllActive || regenAllQueue.length === 0) {
-      if (regenAllActive && regenAllQueue.length === 0) setRegenAllActive(false);
-      return;
-    }
-    if (regenAllFetcher.state !== "idle") return; // wait for current one to finish
-
-    const nextPillar = regenAllQueue[0];
-    const cfg = PILLAR_CONFIG[nextPillar];
-    regenAllFetcher.submit(
-      { intent: "regenerate-pillar", pillar: nextPillar, pillarLabel: cfg.label, pillarDescription: cfg.description },
-      { method: "post" }
-    );
-    setRegenAllQueue((q) => q.slice(1));
-  }, [regenAllActive, regenAllQueue, regenAllFetcher.state]);
-
-  // When regenAll fetcher completes, update hooks
-  useEffect(() => {
-    const data = regenAllFetcher.data as any;
-    if (data?.regenerated && data?.hooks?.length > 0) {
-      setPillarHooks((prev) => ({ ...prev, [data.regenerated]: data.hooks }));
-    }
-  }, [regenAllFetcher.data]);
+  const [regenerating, setRegenerating] = useState<Record<string, boolean>>({});
 
   const filteredIdeas = ideas.filter((i) => filterPillar === "all" || i.pillar === filterPillar);
 
-  const saveHook = async (hook: string, pillar: Pillar) => {
+  // ---- REGENERATE: plain fetch() + setState, NO forms, NO fetchers ----
+  async function regenerateHooks(pillarId: string) {
+    setRegenerating((prev) => ({ ...prev, [pillarId]: true }));
+    try {
+      const res = await fetch("/api/regenerate-hooks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pillarId }),
+      });
+      if (!res.ok) throw new Error(`API returned ${res.status}`);
+      const data = await res.json();
+      if (data.hooks && data.hooks.length > 0) {
+        setPillarHooks((prev) => ({ ...prev, [pillarId]: data.hooks }));
+      } else if (data.error) {
+        throw new Error(data.error);
+      }
+    } catch (err) {
+      console.error("Regenerate failed:", err);
+      alert("Failed to regenerate hooks. Check browser console for details.");
+    } finally {
+      setRegenerating((prev) => ({ ...prev, [pillarId]: false }));
+    }
+  }
+
+  async function regenerateAll() {
+    setRegenerating({ all: true });
+    for (const pillarId of PILLARS) {
+      setRegenerating((prev) => ({ ...prev, [pillarId]: true, all: true }));
+      try {
+        const res = await fetch("/api/regenerate-hooks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pillarId }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.hooks?.length > 0) {
+            setPillarHooks((prev) => ({ ...prev, [pillarId]: data.hooks }));
+          }
+        }
+      } catch (err) {
+        console.error(`Regenerate ${pillarId} failed:`, err);
+      } finally {
+        setRegenerating((prev) => ({ ...prev, [pillarId]: false }));
+      }
+    }
+    setRegenerating({});
+  }
+
+  // Save hook to idea bank
+  async function saveHook(hook: string, pillar: Pillar) {
     await fetch("/api/save-idea", {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: hook, pillar, hookDraft: hook }),
     });
     setSavedHooks((prev) => new Set(prev).add(hook));
-  };
+  }
 
-  const openScriptWriter = async (hook: string, pillar: Pillar) => {
+  // Script writer modal
+  async function openScriptWriter(hook: string, pillar: Pillar) {
     setScriptModal({ hook, pillar, script: null, loading: true, error: null, copied: false, saved: false, mock: false });
     try {
       const res = await fetch("/api/generate-script", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ hook, pillar: PILLAR_CONFIG[pillar]?.label || pillar }),
       });
       const data = await res.json();
       if (data.script) setScriptModal((prev) => prev ? { ...prev, script: data.script, loading: false, mock: !!data.mock } : null);
       else setScriptModal((prev) => prev ? { ...prev, error: data.error || "Failed", loading: false } : null);
     } catch { setScriptModal((prev) => prev ? { ...prev, error: "Network error", loading: false } : null); }
-  };
+  }
 
   const tabs = [
     { key: "pillars", label: "Pillars & Hooks", icon: Zap },
@@ -188,10 +151,13 @@ export default function StudioPage() {
           ))}
         </div>
         {tab === "pillars" && (
-          <button onClick={startRegenAll} disabled={regenAllActive}
-            className="btn-ghost text-[12px] flex items-center gap-1.5">
-            <RefreshCw className={`w-3 h-3 ${regenAllActive ? "animate-spin" : ""}`} />
-            {regenAllActive ? "Regenerating..." : "Regenerate All"}
+          <button
+            onClick={regenerateAll}
+            disabled={!!regenerating.all}
+            className="btn-ghost text-[12px] flex items-center gap-1.5"
+          >
+            <RefreshCw className={`w-3 h-3 ${regenerating.all ? "animate-spin" : ""}`} />
+            {regenerating.all ? "Regenerating..." : "Regenerate All"}
           </button>
         )}
       </div>
@@ -203,7 +169,7 @@ export default function StudioPage() {
             const p = PILLAR_CONFIG[key];
             const hooks = pillarHooks[key] || [];
             const isExpanded = expandedPillar === key;
-            const isRegenThis = regenPillar === key || (regenAllActive && regenAllFetcher.formData?.get("pillar") === key);
+            const isRegen = !!regenerating[key];
             return (
               <div key={key} className="card-static overflow-hidden !rounded-[16px]" style={{ borderLeft: `3px solid ${p.color}` }}>
                 <button onClick={() => setExpandedPillar(isExpanded ? null : key)}
@@ -223,23 +189,20 @@ export default function StudioPage() {
                   <div className="px-5 pb-5">
                     <div className="flex items-center justify-between mb-3">
                       <div className="divider flex-1" />
-                      <regenFetcher.Form method="post" className="ml-3">
-                        <input type="hidden" name="intent" value="regenerate-pillar" />
-                        <input type="hidden" name="pillar" value={key} />
-                        <input type="hidden" name="pillarLabel" value={p.label} />
-                        <input type="hidden" name="pillarDescription" value={p.description} />
-                        <button type="submit" disabled={regenPillar !== null || regenAllActive}
-                          className="text-[11px] text-[#007aff] font-medium flex items-center gap-1 hover:text-[#0066d6]">
-                          <RefreshCw className={`w-3 h-3 ${isRegenThis ? "animate-spin" : ""}`} />
-                          {isRegenThis ? "Regenerating..." : "Regenerate"}
-                        </button>
-                      </regenFetcher.Form>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); regenerateHooks(key); }}
+                        disabled={isRegen || !!regenerating.all}
+                        className="ml-3 text-[11px] text-[#007aff] font-medium flex items-center gap-1 hover:text-[#0066d6] disabled:opacity-50"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${isRegen ? "animate-spin" : ""}`} />
+                        {isRegen ? "Generating..." : "Regenerate"}
+                      </button>
                     </div>
                     <div className="space-y-2">
                       {hooks.map((hook, i) => {
                         const isSaved = savedHooks.has(hook);
                         return (
-                          <div key={`${key}-${i}`} className={`flex items-center justify-between gap-3 p-3 rounded-[10px] transition-all ${isSaved ? "bg-[#e8e8ed] opacity-50" : "bg-[#e8e8ed] hover:bg-[#dcdce0]"}`}>
+                          <div key={`${key}-${i}-${hook.slice(0,20)}`} className={`flex items-center justify-between gap-3 p-3 rounded-[10px] transition-all ${isSaved ? "bg-[#e8e8ed] opacity-50" : "bg-[#e8e8ed] hover:bg-[#dcdce0]"}`}>
                             <p className={`text-[13px] flex-1 ${isSaved ? "text-[#aeaeb2] line-through" : "text-[#1d1d1f]"}`}>"{hook}"</p>
                             <div className="flex gap-1.5 shrink-0">
                               {!isSaved ? (
@@ -328,8 +291,7 @@ export default function StudioPage() {
       {scriptModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => !scriptModal.loading && setScriptModal(null)}>
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm fade-in" />
-          <div className="relative w-full max-w-[700px] max-h-[85vh] overflow-y-auto bg-white rounded-[20px] p-8 slide-in shadow-2xl"
-            onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-[700px] max-h-[85vh] overflow-y-auto bg-white rounded-[20px] p-8 slide-in shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between mb-6">
               <div className="flex-1 min-w-0">
                 <p className="text-[18px] font-medium" style={{ color: PILLAR_CONFIG[scriptModal.pillar]?.color || "#007aff" }}>"{scriptModal.hook}"</p>
